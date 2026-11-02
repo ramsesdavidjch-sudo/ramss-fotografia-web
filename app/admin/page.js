@@ -5,7 +5,8 @@ import { supabase } from "../../lib/supabase";
 
 const emptyForm = { id: null, name: "", description: "", price_from: "", price: "", category: "", features: "" };
 const emptyPhoto = { id: null, title: "", category: "Retratos", alt_text: "", image_url: "", sort_order: 0, is_visible: true };
-const emptyProject = { id: null, title: "", slug: "", description: "", category: "Editorial", cover_image_url: "", sort_order: 0, is_visible: true };\nconst defaultSettings = { brand_name: "RamsS Fotografía", tagline: "", hero_title: "", hero_description: "", intro_title: "", intro_description: "", about_title: "", about_description: "", contact_title: "", contact_description: "", contact_email: "", contact_phone: "", whatsapp_number: "", instagram_url: "https://www.instagram.com/ramssfotografia/", location_text: "", business_hours: "", seo_title: "", seo_description: "", hero_image_url: "", about_image_url: "", footer_text: "" };
+const emptyProject = { id: null, title: "", slug: "", description: "", category: "Editorial", cover_image_url: "", sort_order: 0, is_visible: true };
+const defaultSettings = { brand_name: "RamsS Fotografía", tagline: "", hero_title: "", hero_description: "", intro_title: "", intro_description: "", about_title: "", about_description: "", contact_title: "", contact_description: "", contact_email: "", contact_phone: "", whatsapp_number: "", instagram_url: "https://www.instagram.com/ramssfotografia/", location_text: "", business_hours: "", seo_title: "", seo_description: "", hero_image_url: "", about_image_url: "", footer_text: "" };
 
 export default function Admin() {
   const [session, setSession] = useState(null);
@@ -133,7 +134,8 @@ export default function Admin() {
     try { const url = await uploadFile(file, "configuracion"); setSettings(current => ({ ...current, [field]: url })); setMessage("Imagen cargada. Recuerda guardar la configuración."); }
     catch (error) { setMessage(error.message || "No se pudo subir la imagen."); }
     finally { setBusy(false); }
-  }\n
+  }
+
   async function saveSettings(e) {
     e.preventDefault(); setBusy(true); setMessage("");
     try {
@@ -143,7 +145,8 @@ export default function Admin() {
       setMessage("Información del sitio y contacto guardada.");
     } catch (error) { setMessage(error.message || "No se pudo guardar la configuración."); }
     finally { setBusy(false); }
-  }\n
+  }
+
   async function saveItem(e) {
     e.preventDefault(); setBusy(true);
     try {
