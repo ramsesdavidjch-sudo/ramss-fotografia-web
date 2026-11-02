@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
-const emptyForm = { id: null, name: "", description: "", price_from: "", price: "", category: "", features: "" };
+const emptyForm = { id: null, name: "", description: "", price_from: "", price: "", category: "", features: "", is_active: true, sort_order: 0 };
 const emptyPhoto = { id: null, title: "", category: "Retratos", alt_text: "", image_url: "", sort_order: 0, is_visible: true };
 const emptyProject = { id: null, title: "", slug: "", description: "", category: "Editorial", cover_image_url: "", sort_order: 0, is_visible: true };
 const defaultSettings = { brand_name: "RamsS Fotografía", tagline: "", hero_title: "", hero_description: "", intro_title: "", intro_description: "", about_title: "", about_description: "", contact_title: "", contact_description: "", contact_email: "", contact_phone: "", whatsapp_number: "", instagram_url: "https://www.instagram.com/ramssfotografia/", facebook_url: "", tiktok_url: "", pinterest_url: "", location_text: "", contact_address: "", service_area: "", google_maps_url: "", business_hours: "", contact_form_enabled: true, show_portfolio: true, show_services: true, show_packages: true, show_about: true, show_contact: true, announcement_enabled: false, announcement_text: "", seo_title: "", seo_description: "", hero_image_url: "", about_image_url: "", footer_text: "" };
 
 export default function Admin() {
   const [session, setSession] = useState(null);
-  const [tab, setTab] = useState("portfolio");
+  const [tab, setTab] = useState("dashboard");
   const [subtab, setSubtab] = useState("photos");
   const [rows, setRows] = useState([]);
   const [projectImages, setProjectImages] = useState([]);
@@ -25,7 +25,7 @@ export default function Admin() {
   const [coverFile, setCoverFile] = useState(null);
   const [projectFiles, setProjectFiles] = useState([]);
   const [selectedProject, setSelectedProject] = useState("");
-  const [settings, setSettings] = useState(defaultSettings);
+  const [settings, setSettings] = useState(defaultSettings);\n  const [metrics, setMetrics] = useState({ photos: 0, projects: 0, services: 0, packages: 0, inquiries: 0, newInquiries: 0 });
 
   useEffect(() => {
     if (!supabase) return;
@@ -151,8 +151,8 @@ export default function Admin() {
     e.preventDefault(); setBusy(true);
     try {
       const payload = tab === "services"
-        ? { name: form.name, description: form.description, price_from: form.price_from, is_active: true }
-        : { name: form.name, description: form.description, price: form.price === "" ? null : Number(form.price), category: form.category || "Paquete", features: form.features.split("\n").map(x => x.trim()).filter(Boolean), is_active: true };
+        ? { name: form.name, description: form.description, price_from: form.price_from, is_active: form.is_active, sort_order: Number(form.sort_order) || 0 }
+        : { name: form.name, description: form.description, price: form.price === "" ? null : Number(form.price), category: form.category || "Paquete", features: form.features.split("\\n").map(x => x.trim()).filter(Boolean), is_active: form.is_active, sort_order: Number(form.sort_order) || 0 };
       const result = form.id ? await supabase.from(tab).update(payload).eq("id", form.id) : await supabase.from(tab).insert(payload);
       if (result.error) throw result.error;
       setForm(emptyForm); setMessage("Guardado correctamente."); await loadRows();
@@ -186,11 +186,11 @@ export default function Admin() {
 
   return <div className="admin-layout">
     <aside className="admin-side"><a className="wordmark" href="/">RAMSS<span>®</span><small>ADMINISTRACIÓN</small></a>
-      {["portfolio", "services", "packages", "inquiries", "settings"].map(key => <button className={tab === key ? "active" : ""} key={key} onClick={() => { setTab(key); setForm(emptyForm); }}>{({ portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes", settings: "Sitio y contacto" })[key]}</button>)}
+      {["dashboard", "portfolio", "services", "packages", "inquiries", "settings"].map(key => <button className={tab === key ? "active" : ""} key={key} onClick={() => { setTab(key); setForm(emptyForm); }}>{({ dashboard: "Resumen", portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes", settings: "Sitio y contacto" })[key]}</button>)}
       <button onClick={() => supabase.auth.signOut()}>Cerrar sesión</button><a href="/">Ver sitio ↗</a>
     </aside>
-    <section className="admin-main"><p className="eyebrow">PANEL DE CONTROL</p><h1>{({ portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes", settings: "Sitio y contacto" })[tab]}</h1>
-      {message && <p className="admin-message">{message}</p>}
+    <section className="admin-main"><p className="eyebrow">PANEL DE CONTROL</p><h1>{({ dashboard: "Resumen", portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes", settings: "Sitio y contacto" })[tab]}</h1>
+      {message && <p className="admin-message">{message}</p>}\n      {tab === "dashboard" && <div className="admin-dashboard"><div className="admin-metrics">{[["Fotografías",metrics.photos],["Proyectos",metrics.projects],["Servicios",metrics.services],["Paquetes",metrics.packages],["Solicitudes",metrics.inquiries],["Nuevas solicitudes",metrics.newInquiries]].map(([label,value])=><article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div><h2>Solicitudes recientes</h2><div className="admin-list">{rows.map(r=><article key={r.id}><div className="admin-row-copy"><strong>{r.name}</strong><p>{r.email} · {r.service || "Proyecto personalizado"}</p><small>{new Date(r.created_at).toLocaleString("es-VE")} · {r.status || "new"}</small></div><button onClick={()=>setTab("inquiries")}>Gestionar</button></article>)}{!rows.length && <p>Aún no hay solicitudes.</p>}</div></div>}
       {tab === "portfolio" && <div className="admin-tabs">
         <button className={subtab === "photos" ? "selected" : ""} onClick={() => setSubtab("photos")}>Fotografías individuales</button>
         <button className={subtab === "projects" ? "selected" : ""} onClick={() => setSubtab("projects")}>Proyectos editoriales</button>
