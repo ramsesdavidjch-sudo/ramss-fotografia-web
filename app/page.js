@@ -42,6 +42,20 @@ export default function Home() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (!site || typeof document === "undefined") return;
+    if (site.seo_title) document.title = site.seo_title;
+    if (site.seo_description) {
+      let description = document.querySelector('meta[name="description"]');
+      if (!description) {
+        description = document.createElement("meta");
+        description.setAttribute("name", "description");
+        document.head.appendChild(description);
+      }
+      description.setAttribute("content", site.seo_description);
+    }
+  }, [site]);
+
   async function submitInquiry(e) {
     e.preventDefault();
     if (!supabase) {
