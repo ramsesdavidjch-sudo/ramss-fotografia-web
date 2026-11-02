@@ -86,3 +86,13 @@ grant insert, update, delete on public.portfolio_images, public.portfolio_projec
 
 -- El bucket ramss-portfolio ya se crea en schema.sql.
 -- No se cambia su visibilidad ni se exponen claves privadas.
+
+-- Importa las fotografías antiguas sin duplicar URLs ya migradas.
+insert into public.portfolio_images (title, image_url, category, alt_text, is_visible, sort_order, created_at)
+select coalesce(g.title, ''), g.image_url, coalesce(nullif(g.category, ''), 'General'),
+       coalesce(g.title, ''), g.is_visible, g.sort_order, g.created_at
+from public.gallery g
+where not exists (
+  select 1 from public.portfolio_images pi where pi.image_url = g.image_url
+);
+
