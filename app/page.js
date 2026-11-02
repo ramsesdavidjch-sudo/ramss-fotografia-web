@@ -14,7 +14,8 @@ const fallbackServices = [
 export default function Home() {
   const [services, setServices] = useState(fallbackServices);
   const [packages, setPackages] = useState([]);
-  const [gallery, setGallery] = useState([]);\n  const [editorialProjects, setEditorialProjects] = useState([]);
+  const [gallery, setGallery] = useState([]);
+  const [editorialProjects, setEditorialProjects] = useState([]);
   const [form, setForm] = useState({ name: "", email: "", service: "", details: "" });
   const [sent, setSent] = useState(false);
 
