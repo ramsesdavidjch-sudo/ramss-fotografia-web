@@ -71,8 +71,8 @@ export default function Home() {
     <main>
       {site?.announcement_enabled && site?.announcement_text && <div className="site-announcement">{site.announcement_text}</div>}\n      <nav className="nav wrap">
         <a className="wordmark" href="#">RAMSS<span>®</span><small>FOTOGRAFÍA</small></a>
-        <div className="navlinks"><a href="#portfolio">Portafolio</a><a href="#services">Servicios</a><a href="#packages">Paquetes</a><a href="#contact">Contacto</a></div>
-        <a className="nav-cta" href="#contact">Hablemos <span>↗</span></a>
+        <div className="navlinks">{site?.show_portfolio !== false && <a href="#portfolio">Portafolio</a>}{site?.show_services !== false && <a href="#services">Servicios</a>}{site?.show_packages !== false && <a href="#packages">Paquetes</a>}{site?.show_contact !== false && <a href="#contact">Contacto</a>}</div>
+        {site?.show_contact !== false && <a className="nav-cta" href="#contact">Hablemos <span>↗</span></a>}
       </nav>
 
       <section className="hero">
