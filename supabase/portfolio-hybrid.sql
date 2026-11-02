@@ -139,3 +139,33 @@ alter table public.site_settings
   add column if not exists hero_image_url text not null default '',
   add column if not exists about_image_url text not null default '',
   add column if not exists footer_text text not null default '';
+
+
+-- Administración ampliada: contacto, redes, visibilidad de secciones y CRM de solicitudes.
+alter table public.site_settings
+  add column if not exists facebook_url text not null default '',
+  add column if not exists tiktok_url text not null default '',
+  add column if not exists pinterest_url text not null default '',
+  add column if not exists contact_address text not null default '',
+  add column if not exists service_area text not null default '',
+  add column if not exists google_maps_url text not null default '',
+  add column if not exists contact_form_enabled boolean not null default true,
+  add column if not exists show_portfolio boolean not null default true,
+  add column if not exists show_services boolean not null default true,
+  add column if not exists show_packages boolean not null default true,
+  add column if not exists show_about boolean not null default true,
+  add column if not exists announcement_enabled boolean not null default false,
+  add column if not exists announcement_text text not null default '';
+
+alter table public.inquiries
+  add column if not exists status text not null default 'new'
+    check (status in ('new','contacted','quoted','closed')),
+  add column if not exists admin_notes text not null default '',
+  add column if not exists updated_at timestamptz not null default now();
+
+drop policy if exists "admins update inquiries" on public.inquiries;
+create policy "admins update inquiries" on public.inquiries
+  for update to authenticated using (public.is_site_admin())
+  with check (public.is_site_admin());
+
+grant update on public.inquiries to authenticated;
