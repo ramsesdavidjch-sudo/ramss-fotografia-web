@@ -169,3 +169,6 @@ create policy "admins update inquiries" on public.inquiries
   with check (public.is_site_admin());
 
 grant update on public.inquiries to authenticated;
+
+alter table public.site_settings
+  add column if not exists show_contact boolean not null default true;
