@@ -134,3 +134,8 @@ create policy "admins update site settings" on public.site_settings
 
 grant select on public.site_settings to anon, authenticated;
 grant insert, update, delete on public.site_settings to authenticated;
+
+alter table public.site_settings
+  add column if not exists hero_image_url text not null default '',
+  add column if not exists about_image_url text not null default '',
+  add column if not exists footer_text text not null default '';
