@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
-const emptyForm = { id: null, name: "", description: "", price_from: "", price: "", category: "", features: "" };
+const emptyForm = { id: null, name: "", description: "", price_from: "", price: "", category: "", features: "", is_active: true, sort_order: 0 };
 const emptyPhoto = { id: null, title: "", category: "Retratos", alt_text: "", image_url: "", sort_order: 0, is_visible: true };
 const emptyProject = { id: null, title: "", slug: "", description: "", category: "Editorial", cover_image_url: "", sort_order: 0, is_visible: true };
+const defaultSettings = { brand_name: "RamsS Fotografía", tagline: "", hero_title: "", hero_description: "", intro_title: "", intro_description: "", about_title: "", about_description: "", contact_title: "", contact_description: "", contact_email: "", contact_phone: "", whatsapp_number: "", instagram_url: "https://www.instagram.com/ramssfotografia/", facebook_url: "", tiktok_url: "", pinterest_url: "", location_text: "", contact_address: "", service_area: "", google_maps_url: "", business_hours: "", contact_form_enabled: true, show_portfolio: true, show_services: true, show_packages: true, show_about: true, show_contact: true, announcement_enabled: false, announcement_text: "", seo_title: "", seo_description: "", hero_image_url: "", about_image_url: "", footer_text: "" };
 
 export default function Admin() {
   const [session, setSession] = useState(null);
-  const [tab, setTab] = useState("portfolio");
+  const [tab, setTab] = useState("dashboard");
   const [subtab, setSubtab] = useState("photos");
   const [rows, setRows] = useState([]);
   const [projectImages, setProjectImages] = useState([]);
@@ -24,6 +25,8 @@ export default function Admin() {
   const [coverFile, setCoverFile] = useState(null);
   const [projectFiles, setProjectFiles] = useState([]);
   const [selectedProject, setSelectedProject] = useState("");
+  const [settings, setSettings] = useState(defaultSettings);
+  const [metrics, setMetrics] = useState({ photos: 0, projects: 0, services: 0, packages: 0, inquiries: 0, newInquiries: 0 });
 
   useEffect(() => {
     if (!supabase) return;
@@ -38,7 +41,25 @@ export default function Admin() {
     if (!supabase) return;
     setMessage("");
     let result;
-    if (tab === "portfolio" && subtab === "photos") {
+    if (tab === "dashboard") {
+      const [photos, projects, services, packages, inquiries, fresh] = await Promise.all([
+        supabase.from("portfolio_images").select("*", { count: "exact", head: true }),
+        supabase.from("portfolio_projects").select("*", { count: "exact", head: true }),
+        supabase.from("services").select("*", { count: "exact", head: true }),
+        supabase.from("packages").select("*", { count: "exact", head: true }),
+        supabase.from("inquiries").select("*", { count: "exact", head: true }),
+        supabase.from("inquiries").select("*").order("created_at", { ascending: false }).limit(5)
+      ]);
+      setMetrics({ photos: photos.count || 0, projects: projects.count || 0, services: services.count || 0, packages: packages.count || 0, inquiries: inquiries.count || 0, newInquiries: fresh.data?.filter(item => (item.status || "new") === "new").length || 0 });
+      setRows(fresh.data || []);
+      const failure = [photos, projects, services, packages, inquiries, fresh].find(item => item.error);
+      if (failure) setMessage(failure.error.message);
+      return;
+    }
+    if (tab === "settings") {
+      result = await supabase.from("site_settings").select("*").eq("id", 1).single();
+      if (result.data) setSettings({ ...defaultSettings, ...result.data });
+    } else if (tab === "portfolio" && subtab === "photos") {
       result = await supabase.from("portfolio_images").select("*").order("sort_order").order("created_at", { ascending: false });
     } else if (tab === "portfolio" && subtab === "projects") {
       result = await supabase.from("portfolio_projects").select("*").order("sort_order").order("created_at", { ascending: false });
@@ -123,12 +144,36 @@ export default function Admin() {
     else await loadRows();
   }
 
+  async function uploadSettingImage(e, field) {
+    const file = e.target.files?.[0]; if (!file) return;
+    setBusy(true); setMessage("");
+    try { const url = await uploadFile(file, "configuracion"); setSettings(current => ({ ...current, [field]: url })); setMessage("Imagen cargada. Recuerda guardar la configuración."); }
+    catch (error) { setMessage(error.message || "No se pudo subir la imagen."); }
+    finally { setBusy(false); }
+  }
+
+  async function updateInquiry(id, changes) {
+    const { error } = await supabase.from("inquiries").update({ ...changes, updated_at: new Date().toISOString() }).eq("id", id);
+    if (error) setMessage(error.message); else { setMessage("Solicitud actualizada."); await loadRows(); }
+  }
+
+  async function saveSettings(e) {
+    e.preventDefault(); setBusy(true); setMessage("");
+    try {
+      const payload = { ...settings, id: 1, updated_at: new Date().toISOString() };
+      const { error } = await supabase.from("site_settings").upsert(payload, { onConflict: "id" });
+      if (error) throw error;
+      setMessage("Información del sitio y contacto guardada.");
+    } catch (error) { setMessage(error.message || "No se pudo guardar la configuración."); }
+    finally { setBusy(false); }
+  }
+
   async function saveItem(e) {
     e.preventDefault(); setBusy(true);
     try {
       const payload = tab === "services"
-        ? { name: form.name, description: form.description, price_from: form.price_from, is_active: true }
-        : { name: form.name, description: form.description, price: form.price === "" ? null : Number(form.price), category: form.category || "Paquete", features: form.features.split("\n").map(x => x.trim()).filter(Boolean), is_active: true };
+        ? { name: form.name, description: form.description, price_from: form.price_from, is_active: form.is_active, sort_order: Number(form.sort_order) || 0 }
+        : { name: form.name, description: form.description, price: form.price === "" ? null : Number(form.price), category: form.category || "Paquete", features: form.features.split("\n").map(x => x.trim()).filter(Boolean), is_active: form.is_active, sort_order: Number(form.sort_order) || 0 };
       const result = form.id ? await supabase.from(tab).update(payload).eq("id", form.id) : await supabase.from(tab).insert(payload);
       if (result.error) throw result.error;
       setForm(emptyForm); setMessage("Guardado correctamente."); await loadRows();
@@ -162,11 +207,12 @@ export default function Admin() {
 
   return <div className="admin-layout">
     <aside className="admin-side"><a className="wordmark" href="/">RAMSS<span>®</span><small>ADMINISTRACIÓN</small></a>
-      {["portfolio", "services", "packages", "inquiries"].map(key => <button className={tab === key ? "active" : ""} key={key} onClick={() => { setTab(key); setForm(emptyForm); }}>{({ portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes" })[key]}</button>)}
+      {["dashboard", "portfolio", "services", "packages", "inquiries", "settings"].map(key => <button className={tab === key ? "active" : ""} key={key} onClick={() => { setTab(key); setForm(emptyForm); }}>{({ dashboard: "Resumen", portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes", settings: "Sitio y contacto" })[key]}</button>)}
       <button onClick={() => supabase.auth.signOut()}>Cerrar sesión</button><a href="/">Ver sitio ↗</a>
     </aside>
-    <section className="admin-main"><p className="eyebrow">PANEL DE CONTROL</p><h1>{({ portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes" })[tab]}</h1>
+    <section className="admin-main"><p className="eyebrow">PANEL DE CONTROL</p><h1>{({ dashboard: "Resumen", portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes", settings: "Sitio y contacto" })[tab]}</h1>
       {message && <p className="admin-message">{message}</p>}
+      {tab === "dashboard" && <div className="admin-dashboard"><div className="admin-metrics">{[["Fotografías",metrics.photos],["Proyectos",metrics.projects],["Servicios",metrics.services],["Paquetes",metrics.packages],["Solicitudes",metrics.inquiries],["Nuevas solicitudes",metrics.newInquiries]].map(([label,value])=><article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div><h2>Solicitudes recientes</h2><div className="admin-list">{rows.map(r=><article key={r.id}><div className="admin-row-copy"><strong>{r.name}</strong><p>{r.email} · {r.service || "Proyecto personalizado"}</p><small>{new Date(r.created_at).toLocaleString("es-VE")} · {r.status || "new"}</small></div><button onClick={()=>setTab("inquiries")}>Gestionar</button></article>)}{!rows.length && <p>Aún no hay solicitudes.</p>}</div></div>}
       {tab === "portfolio" && <div className="admin-tabs">
         <button className={subtab === "photos" ? "selected" : ""} onClick={() => setSubtab("photos")}>Fotografías individuales</button>
         <button className={subtab === "projects" ? "selected" : ""} onClick={() => setSubtab("projects")}>Proyectos editoriales</button>
@@ -185,10 +231,51 @@ export default function Admin() {
         <div className="admin-list">{projectImages.map((r, i) => <article key={r.id}><img className="admin-thumb" src={r.image_url} alt="" /><div className="admin-row-copy"><strong>Imagen {i + 1}</strong><p>Orden {r.sort_order}</p></div><div className="admin-actions"><button disabled={i === 0} onClick={() => moveProjectImage(i, -1)}>Subir</button><button disabled={i === projectImages.length - 1} onClick={() => moveProjectImage(i, 1)}>Bajar</button><button onClick={() => remove("portfolio_project_images", r.id, r.image_url)}>Eliminar</button></div></article>)}{!projectImages.length && <p>Este proyecto aún no tiene imágenes.</p>}</div>
       </>}
       {(tab === "services" || tab === "packages") && <>
-        <form className="admin-create" onSubmit={saveItem}><h2>{form.id ? "Editar" : "Agregar"} {tab === "services" ? "servicio" : "paquete"}</h2><label>Nombre<input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label><label>Descripción<textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></label>{tab === "services" ? <label>Precio desde<input value={form.price_from} onChange={e => setForm({ ...form, price_from: e.target.value })} /></label> : <><label>Precio USD<input type="number" min="0" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></label><label>Categoría<input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} /></label><label>Características (una por línea)<textarea rows="4" value={form.features} onChange={e => setForm({ ...form, features: e.target.value })} /></label></>}<div className="admin-actions"><button className="button button-dark" disabled={busy}>Guardar</button><button type="button" className="button button-quiet" onClick={() => setForm(emptyForm)}>Limpiar</button></div></form>
-        <div className="admin-list">{rows.map(r => <article key={r.id}><div className="admin-row-copy"><strong>{r.name}</strong><p>{r.description}</p></div><div className="admin-actions"><button onClick={() => setForm({ id: r.id, name: r.name, description: r.description || "", price_from: r.price_from || "", price: r.price ?? "", category: r.category || "", features: (r.features || []).join("\n") })}>Editar</button><button onClick={() => remove(tab, r.id)}>Eliminar</button></div></article>)}{!rows.length && <p>No hay registros.</p>}</div>
+        <form className="admin-create" onSubmit={saveItem}><h2>{form.id ? "Editar" : "Agregar"} {tab === "services" ? "servicio" : "paquete"}</h2><label>Nombre<input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label><label>Descripción<textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></label>{tab === "services" ? <label>Precio desde<input value={form.price_from} onChange={e => setForm({ ...form, price_from: e.target.value })} /></label> : <><label>Precio USD<input type="number" min="0" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></label><label>Categoría<input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} /></label><label>Características (una por línea)<textarea rows="4" value={form.features} onChange={e => setForm({ ...form, features: e.target.value })} /></label></>}<label>Orden de visualización<input type="number" value={form.sort_order} onChange={e=>setForm({...form,sort_order:e.target.value})}/></label><label className="admin-check"><input type="checkbox" checked={form.is_active} onChange={e=>setForm({...form,is_active:e.target.checked})}/> Publicado en la web</label><div className="admin-actions"><button className="button button-dark" disabled={busy}>Guardar</button><button type="button" className="button button-quiet" onClick={() => setForm(emptyForm)}>Limpiar</button></div></form>
+        <div className="admin-list">{rows.map(r => <article key={r.id}><div className="admin-row-copy"><strong>{r.name}</strong><p>{r.description}</p></div><div className="admin-actions"><button onClick={() => setForm({ id: r.id, name: r.name, description: r.description || "", price_from: r.price_from || "", price: r.price ?? "", category: r.category || "", features: (r.features || []).join("\n"), is_active: r.is_active !== false, sort_order: r.sort_order || 0 })}>Editar</button><button onClick={() => remove(tab, r.id)}>Eliminar</button></div></article>)}{!rows.length && <p>No hay registros.</p>}</div>
       </>}
-      {tab === "inquiries" && <div className="admin-list">{rows.map(r => <article key={r.id}><div className="admin-row-copy"><strong>{r.name}</strong><p>{r.email} · {r.service || "Sin servicio especificado"}</p><p>{r.details}</p><small>{new Date(r.created_at).toLocaleString("es-VE")}</small></div><button onClick={() => remove("inquiries", r.id)}>Eliminar</button></article>)}{!rows.length && <p>No hay solicitudes todavía.</p>}</div>}
+      {tab === "settings" && <form className="admin-create settings-form" onSubmit={saveSettings}>
+        <h2>Identidad y página de inicio</h2>
+        <label>Nombre de marca<input value={settings.brand_name} onChange={e=>setSettings({...settings,brand_name:e.target.value})}/></label>
+        <label>Frase de marca / especialidades<input value={settings.tagline} onChange={e=>setSettings({...settings,tagline:e.target.value})}/></label>
+        <label>Imagen principal<input type="file" accept="image/*" onChange={e=>uploadSettingImage(e,"hero_image_url")}/></label>{settings.hero_image_url && <img className="admin-preview" src={settings.hero_image_url} alt="Imagen principal actual"/>}
+        <label>Título principal<textarea rows="2" value={settings.hero_title} onChange={e=>setSettings({...settings,hero_title:e.target.value})}/></label>
+        <label>Texto principal<textarea rows="3" value={settings.hero_description} onChange={e=>setSettings({...settings,hero_description:e.target.value})}/></label>
+        <label>Título de introducción<input value={settings.intro_title} onChange={e=>setSettings({...settings,intro_title:e.target.value})}/></label>
+        <label>Texto de introducción<textarea rows="3" value={settings.intro_description} onChange={e=>setSettings({...settings,intro_description:e.target.value})}/></label>
+        <h2>Acerca de mí</h2>
+        <label>Fotografía de presentación<input type="file" accept="image/*" onChange={e=>uploadSettingImage(e,"about_image_url")}/></label>{settings.about_image_url && <img className="admin-preview" src={settings.about_image_url} alt="Fotografía de presentación actual"/>}
+        <label>Título de presentación<input value={settings.about_title} onChange={e=>setSettings({...settings,about_title:e.target.value})}/></label>
+        <label>Biografía<textarea rows="5" value={settings.about_description} onChange={e=>setSettings({...settings,about_description:e.target.value})}/></label>
+        <h2>Información de contacto</h2>
+        <label>Título de contacto<input value={settings.contact_title} onChange={e=>setSettings({...settings,contact_title:e.target.value})}/></label>
+        <label>Texto de contacto<textarea rows="3" value={settings.contact_description} onChange={e=>setSettings({...settings,contact_description:e.target.value})}/></label>
+        <label>Correo público<input type="email" value={settings.contact_email} onChange={e=>setSettings({...settings,contact_email:e.target.value})}/></label>
+        <label>Teléfono público<input value={settings.contact_phone} onChange={e=>setSettings({...settings,contact_phone:e.target.value})}/></label>
+        <label>WhatsApp con código de país<input value={settings.whatsapp_number} onChange={e=>setSettings({...settings,whatsapp_number:e.target.value})} placeholder="58412XXXXXXX"/></label>
+        <label>Dirección o referencia pública<input value={settings.contact_address} onChange={e=>setSettings({...settings,contact_address:e.target.value})}/></label>
+        <label>Ciudad / ubicación visible<input value={settings.location_text} onChange={e=>setSettings({...settings,location_text:e.target.value})}/></label>
+        <label>Zona donde prestas servicios<input value={settings.service_area} onChange={e=>setSettings({...settings,service_area:e.target.value})}/></label>
+        <label>Enlace de Google Maps<input type="url" value={settings.google_maps_url} onChange={e=>setSettings({...settings,google_maps_url:e.target.value})}/></label>
+        <label>Horario de atención<input value={settings.business_hours} onChange={e=>setSettings({...settings,business_hours:e.target.value})}/></label>
+        <h2>Redes sociales</h2>
+        <label>Instagram<input type="url" value={settings.instagram_url} onChange={e=>setSettings({...settings,instagram_url:e.target.value})}/></label>
+        <label>Facebook<input type="url" value={settings.facebook_url} onChange={e=>setSettings({...settings,facebook_url:e.target.value})}/></label>
+        <label>TikTok<input type="url" value={settings.tiktok_url} onChange={e=>setSettings({...settings,tiktok_url:e.target.value})}/></label>
+        <label>Pinterest<input type="url" value={settings.pinterest_url} onChange={e=>setSettings({...settings,pinterest_url:e.target.value})}/></label>
+        <h2>Secciones visibles</h2>
+        {["show_portfolio","show_services","show_packages","show_about","show_contact","contact_form_enabled"].map((field)=> <label className="admin-check" key={field}><input type="checkbox" checked={!!settings[field]} onChange={e=>setSettings({...settings,[field]:e.target.checked})}/>{{show_portfolio:"Mostrar portafolio",show_services:"Mostrar servicios",show_packages:"Mostrar paquetes",show_about:"Mostrar presentación",show_contact:"Mostrar sección de contacto",contact_form_enabled:"Activar formulario de contacto"}[field]}</label>)}
+        <h2>Aviso destacado</h2>
+        <label className="admin-check"><input type="checkbox" checked={settings.announcement_enabled} onChange={e=>setSettings({...settings,announcement_enabled:e.target.checked})}/>Mostrar aviso</label>
+        <label>Texto del aviso<input value={settings.announcement_text} onChange={e=>setSettings({...settings,announcement_text:e.target.value})}/></label>
+        <h2>Pie de página</h2>
+        <label>Texto del pie de página<input value={settings.footer_text} onChange={e=>setSettings({...settings,footer_text:e.target.value})}/></label>
+        <h2>SEO y buscadores</h2>
+        <label>Título SEO<input value={settings.seo_title} onChange={e=>setSettings({...settings,seo_title:e.target.value})}/></label>
+        <label>Descripción SEO<textarea rows="3" value={settings.seo_description} onChange={e=>setSettings({...settings,seo_description:e.target.value})}/></label>
+        <button className="button button-dark" disabled={busy}>{busy ? "Guardando..." : "Guardar toda la configuración"}</button>
+      </form>}
+      {tab === "inquiries" && <div className="admin-list">{rows.map(r => <article className="inquiry-card" key={r.id}><div className="admin-row-copy"><strong>{r.name}</strong><p><a href={`mailto:${r.email}`}>{r.email}</a> · {r.service || "Sin servicio especificado"}</p><p>{r.details}</p><small>{new Date(r.created_at).toLocaleString("es-VE")}</small><label>Estado<select value={r.status || "new"} onChange={e=>updateInquiry(r.id,{status:e.target.value})}><option value="new">Nueva</option><option value="contacted">Contactado</option><option value="quoted">Cotización enviada</option><option value="closed">Cerrada</option></select></label><label>Notas internas<textarea rows="2" defaultValue={r.admin_notes || ""} onBlur={e=>{if(e.target.value !== (r.admin_notes || "")) updateInquiry(r.id,{admin_notes:e.target.value});}} placeholder="Notas privadas para seguimiento"/></label></div><button onClick={() => remove("inquiries", r.id)}>Eliminar</button></article>)}{!rows.length && <p>No hay solicitudes todavía.</p>}</div>}
     </section>
   </div>;
 }
