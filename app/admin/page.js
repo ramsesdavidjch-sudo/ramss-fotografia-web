@@ -123,7 +123,7 @@ export default function Admin() {
     else await loadRows();
   }
 
-  async function saveSettings(e) {\n    e.preventDefault(); setBusy(true); setMessage("");\n    try {\n      const payload = { ...settings, id: 1, updated_at: new Date().toISOString() };\n      const { error } = await supabase.from("site_settings").upsert(payload, { onConflict: "id" });\n      if (error) throw error;\n      setMessage("Información del sitio y contacto guardada.");\n    } catch (error) { setMessage(error.message || "No se pudo guardar la configuración."); }\n    finally { setBusy(false); }\n  }\n\n  async function saveItem(e) {
+  async function uploadSettingImage(e, field) {\n    const file = e.target.files?.[0]; if (!file) return;\n    setBusy(true); setMessage("");\n    try { const url = await uploadFile(file, "configuracion"); setSettings(current => ({ ...current, [field]: url })); setMessage("Imagen cargada. Recuerda guardar la configuración."); }\n    catch (error) { setMessage(error.message || "No se pudo subir la imagen."); }\n    finally { setBusy(false); }\n  }\n\n  async function saveSettings(e) {\n    e.preventDefault(); setBusy(true); setMessage("");\n    try {\n      const payload = { ...settings, id: 1, updated_at: new Date().toISOString() };\n      const { error } = await supabase.from("site_settings").upsert(payload, { onConflict: "id" });\n      if (error) throw error;\n      setMessage("Información del sitio y contacto guardada.");\n    } catch (error) { setMessage(error.message || "No se pudo guardar la configuración."); }\n    finally { setBusy(false); }\n  }\n\n  async function saveItem(e) {
     e.preventDefault(); setBusy(true);
     try {
       const payload = tab === "services"
@@ -192,11 +192,11 @@ export default function Admin() {
         <h2>Identidad y página de inicio</h2>
         <label>Nombre de marca<input value={settings.brand_name} onChange={e=>setSettings({...settings,brand_name:e.target.value})}/></label>
         <label>Frase de marca / especialidades<input value={settings.tagline} onChange={e=>setSettings({...settings,tagline:e.target.value})}/></label>
-        <label>Imagen principal (URL de Supabase Storage)<input value={settings.hero_image_url} onChange={e=>setSettings({...settings,hero_image_url:e.target.value})} placeholder="https://..."/></label>\n        <label>Título principal<textarea rows="2" value={settings.hero_title} onChange={e=>setSettings({...settings,hero_title:e.target.value})}/></label>
+        <label>Imagen principal<input type="file" accept="image/*" onChange={e=>uploadSettingImage(e,"hero_image_url")}/></label>{settings.hero_image_url && <img className="admin-preview" src={settings.hero_image_url} alt="Imagen principal actual"/>}\n        <label>Título principal<textarea rows="2" value={settings.hero_title} onChange={e=>setSettings({...settings,hero_title:e.target.value})}/></label>
         <label>Texto principal<textarea rows="3" value={settings.hero_description} onChange={e=>setSettings({...settings,hero_description:e.target.value})}/></label>
         <label>Título de introducción<input value={settings.intro_title} onChange={e=>setSettings({...settings,intro_title:e.target.value})}/></label>
         <label>Texto de introducción<textarea rows="3" value={settings.intro_description} onChange={e=>setSettings({...settings,intro_description:e.target.value})}/></label>
-        <h2>Acerca de mí</h2>\n        <label>Imagen de presentación (URL)<input value={settings.about_image_url} onChange={e=>setSettings({...settings,about_image_url:e.target.value})} placeholder="https://..."/></label>
+        <h2>Acerca de mí</h2>\n        <label>Fotografía de presentación<input type="file" accept="image/*" onChange={e=>uploadSettingImage(e,"about_image_url")}/></label>{settings.about_image_url && <img className="admin-preview" src={settings.about_image_url} alt="Fotografía de presentación actual"/>}
         <label>Título de presentación<input value={settings.about_title} onChange={e=>setSettings({...settings,about_title:e.target.value})}/></label>
         <label>Biografía<textarea rows="5" value={settings.about_description} onChange={e=>setSettings({...settings,about_description:e.target.value})}/></label>
         <h2>Información de contacto</h2>
