@@ -23,7 +23,8 @@ export default function Admin() {
   const [photoFile, setPhotoFile] = useState(null);
   const [coverFile, setCoverFile] = useState(null);
   const [projectFiles, setProjectFiles] = useState([]);
-  const [selectedProject, setSelectedProject] = useState("");\n  const [settings, setSettings] = useState(defaultSettings);
+  const [selectedProject, setSelectedProject] = useState("");
+  const [settings, setSettings] = useState(defaultSettings);
 
   useEffect(() => {
     if (!supabase) return;
@@ -38,7 +39,10 @@ export default function Admin() {
     if (!supabase) return;
     setMessage("");
     let result;
-    if (tab === "settings") {\n      result = await supabase.from("site_settings").select("*").eq("id", 1).single();\n      if (result.data) setSettings({ ...defaultSettings, ...result.data });\n    } else if (tab === "portfolio" && subtab === "photos") {
+    if (tab === "settings") {
+      result = await supabase.from("site_settings").select("*").eq("id", 1).single();
+      if (result.data) setSettings({ ...defaultSettings, ...result.data });
+    } else if (tab === "portfolio" && subtab === "photos") {
       result = await supabase.from("portfolio_images").select("*").order("sort_order").order("created_at", { ascending: false });
     } else if (tab === "portfolio" && subtab === "projects") {
       result = await supabase.from("portfolio_projects").select("*").order("sort_order").order("created_at", { ascending: false });
@@ -123,7 +127,24 @@ export default function Admin() {
     else await loadRows();
   }
 
-  async function uploadSettingImage(e, field) {\n    const file = e.target.files?.[0]; if (!file) return;\n    setBusy(true); setMessage("");\n    try { const url = await uploadFile(file, "configuracion"); setSettings(current => ({ ...current, [field]: url })); setMessage("Imagen cargada. Recuerda guardar la configuración."); }\n    catch (error) { setMessage(error.message || "No se pudo subir la imagen."); }\n    finally { setBusy(false); }\n  }\n\n  async function saveSettings(e) {\n    e.preventDefault(); setBusy(true); setMessage("");\n    try {\n      const payload = { ...settings, id: 1, updated_at: new Date().toISOString() };\n      const { error } = await supabase.from("site_settings").upsert(payload, { onConflict: "id" });\n      if (error) throw error;\n      setMessage("Información del sitio y contacto guardada.");\n    } catch (error) { setMessage(error.message || "No se pudo guardar la configuración."); }\n    finally { setBusy(false); }\n  }\n\n  async function saveItem(e) {
+  async function uploadSettingImage(e, field) {
+    const file = e.target.files?.[0]; if (!file) return;
+    setBusy(true); setMessage("");
+    try { const url = await uploadFile(file, "configuracion"); setSettings(current => ({ ...current, [field]: url })); setMessage("Imagen cargada. Recuerda guardar la configuración."); }
+    catch (error) { setMessage(error.message || "No se pudo subir la imagen."); }
+    finally { setBusy(false); }
+  }\n
+  async function saveSettings(e) {
+    e.preventDefault(); setBusy(true); setMessage("");
+    try {
+      const payload = { ...settings, id: 1, updated_at: new Date().toISOString() };
+      const { error } = await supabase.from("site_settings").upsert(payload, { onConflict: "id" });
+      if (error) throw error;
+      setMessage("Información del sitio y contacto guardada.");
+    } catch (error) { setMessage(error.message || "No se pudo guardar la configuración."); }
+    finally { setBusy(false); }
+  }\n
+  async function saveItem(e) {
     e.preventDefault(); setBusy(true);
     try {
       const payload = tab === "services"
@@ -192,11 +213,13 @@ export default function Admin() {
         <h2>Identidad y página de inicio</h2>
         <label>Nombre de marca<input value={settings.brand_name} onChange={e=>setSettings({...settings,brand_name:e.target.value})}/></label>
         <label>Frase de marca / especialidades<input value={settings.tagline} onChange={e=>setSettings({...settings,tagline:e.target.value})}/></label>
-        <label>Imagen principal<input type="file" accept="image/*" onChange={e=>uploadSettingImage(e,"hero_image_url")}/></label>{settings.hero_image_url && <img className="admin-preview" src={settings.hero_image_url} alt="Imagen principal actual"/>}\n        <label>Título principal<textarea rows="2" value={settings.hero_title} onChange={e=>setSettings({...settings,hero_title:e.target.value})}/></label>
+        <label>Imagen principal<input type="file" accept="image/*" onChange={e=>uploadSettingImage(e,"hero_image_url")}/></label>{settings.hero_image_url && <img className="admin-preview" src={settings.hero_image_url} alt="Imagen principal actual"/>}
+        <label>Título principal<textarea rows="2" value={settings.hero_title} onChange={e=>setSettings({...settings,hero_title:e.target.value})}/></label>
         <label>Texto principal<textarea rows="3" value={settings.hero_description} onChange={e=>setSettings({...settings,hero_description:e.target.value})}/></label>
         <label>Título de introducción<input value={settings.intro_title} onChange={e=>setSettings({...settings,intro_title:e.target.value})}/></label>
         <label>Texto de introducción<textarea rows="3" value={settings.intro_description} onChange={e=>setSettings({...settings,intro_description:e.target.value})}/></label>
-        <h2>Acerca de mí</h2>\n        <label>Fotografía de presentación<input type="file" accept="image/*" onChange={e=>uploadSettingImage(e,"about_image_url")}/></label>{settings.about_image_url && <img className="admin-preview" src={settings.about_image_url} alt="Fotografía de presentación actual"/>}
+        <h2>Acerca de mí</h2>
+        <label>Fotografía de presentación<input type="file" accept="image/*" onChange={e=>uploadSettingImage(e,"about_image_url")}/></label>{settings.about_image_url && <img className="admin-preview" src={settings.about_image_url} alt="Fotografía de presentación actual"/>}
         <label>Título de presentación<input value={settings.about_title} onChange={e=>setSettings({...settings,about_title:e.target.value})}/></label>
         <label>Biografía<textarea rows="5" value={settings.about_description} onChange={e=>setSettings({...settings,about_description:e.target.value})}/></label>
         <h2>Información de contacto</h2>
@@ -208,7 +231,9 @@ export default function Admin() {
         <label>Enlace de Instagram<input type="url" value={settings.instagram_url} onChange={e=>setSettings({...settings,instagram_url:e.target.value})}/></label>
         <label>Ubicación / zona de servicio<input value={settings.location_text} onChange={e=>setSettings({...settings,location_text:e.target.value})}/></label>
         <label>Horario de atención<input value={settings.business_hours} onChange={e=>setSettings({...settings,business_hours:e.target.value})}/></label>
-        <h2>Pie de página</h2>\n        <label>Texto del pie de página<input value={settings.footer_text} onChange={e=>setSettings({...settings,footer_text:e.target.value})}/></label>\n        <h2>SEO y buscadores</h2>
+        <h2>Pie de página</h2>
+        <label>Texto del pie de página<input value={settings.footer_text} onChange={e=>setSettings({...settings,footer_text:e.target.value})}/></label>
+        <h2>SEO y buscadores</h2>
         <label>Título SEO<input value={settings.seo_title} onChange={e=>setSettings({...settings,seo_title:e.target.value})}/></label>
         <label>Descripción SEO<textarea rows="3" value={settings.seo_description} onChange={e=>setSettings({...settings,seo_description:e.target.value})}/></label>
         <button className="button button-dark" disabled={busy}>{busy ? "Guardando..." : "Guardar toda la configuración"}</button>
