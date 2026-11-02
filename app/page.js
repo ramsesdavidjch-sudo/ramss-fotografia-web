@@ -21,14 +21,20 @@ export default function Home() {
   useEffect(() => {
     if (!supabase) return;
     (async () => {
-      const [s, p, g] = await Promise.all([
+      const [s, p, photos, projects] = await Promise.all([
         supabase.from("services").select("*").eq("is_active", true).order("sort_order"),
         supabase.from("packages").select("*").eq("is_active", true).order("sort_order"),
-        supabase.from("gallery").select("*").eq("is_visible", true).order("sort_order")
+        supabase.from("portfolio_images").select("*").eq("is_visible", true).order("sort_order"),
+        supabase.from("portfolio_projects").select("*, portfolio_project_images(*)").eq("is_visible", true).order("sort_order")
       ]);
       if (s.data?.length) setServices(s.data);
       if (p.data) setPackages(p.data);
-      if (g.data) setGallery(g.data);\n      if (g.error?.code === "42P01") {\n        const legacy = await supabase.from("gallery").select("*").eq("is_visible", true).order("sort_order");\n        if (legacy.data) setGallery(legacy.data);\n      }\n      if (arguments.length === 0 && g.data) { /* portfolio images loaded */ }\n      const projects = await supabase.from("portfolio_projects").select("*, portfolio_project_images(*)").eq("is_visible", true).order("sort_order");\n      if (projects.data) setEditorialProjects(projects.data);
+      if (photos.data) setGallery(photos.data);
+      else if (photos.error?.code === "42P01") {
+        const legacy = await supabase.from("gallery").select("*").eq("is_visible", true).order("sort_order");
+        if (legacy.data) setGallery(legacy.data);
+      }
+      if (projects.data) setEditorialProjects(projects.data);
     })();
   }, []);
 
