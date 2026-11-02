@@ -1,0 +1,88 @@
+-- RamsS Fotografía · Portafolio híbrido
+-- Ejecutar manualmente en Supabase SQL Editor después de revisar y respaldar la base.
+-- Mantiene public.gallery intacta para compatibilidad con el sitio actual.
+
+create table if not exists public.portfolio_images (
+  id uuid primary key default gen_random_uuid(),
+  title text not null default '',
+  image_url text not null,
+  category text not null default 'Retratos',
+  alt_text text not null default '',
+  is_visible boolean not null default true,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.portfolio_projects (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  slug text not null unique,
+  description text not null default '',
+  cover_image_url text not null,
+  category text not null default 'Editorial',
+  is_visible boolean not null default true,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.portfolio_project_images (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.portfolio_projects(id) on delete cascade,
+  image_url text not null,
+  alt_text text not null default '',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists portfolio_images_visible_order_idx
+  on public.portfolio_images (is_visible, sort_order);
+create index if not exists portfolio_projects_visible_order_idx
+  on public.portfolio_projects (is_visible, sort_order);
+create index if not exists portfolio_project_images_project_order_idx
+  on public.portfolio_project_images (project_id, sort_order);
+
+alter table public.portfolio_images enable row level security;
+alter table public.portfolio_projects enable row level security;
+alter table public.portfolio_project_images enable row level security;
+
+drop policy if exists "public reads visible portfolio images" on public.portfolio_images;
+create policy "public reads visible portfolio images"
+  on public.portfolio_images for select to anon, authenticated
+  using (is_visible = true or public.is_site_admin());
+
+drop policy if exists "admins manage portfolio images v2" on public.portfolio_images;
+create policy "admins manage portfolio images v2"
+  on public.portfolio_images for all to authenticated
+  using (public.is_site_admin()) with check (public.is_site_admin());
+
+drop policy if exists "public reads visible portfolio projects" on public.portfolio_projects;
+create policy "public reads visible portfolio projects"
+  on public.portfolio_projects for select to anon, authenticated
+  using (is_visible = true or public.is_site_admin());
+
+drop policy if exists "admins manage portfolio projects" on public.portfolio_projects;
+create policy "admins manage portfolio projects"
+  on public.portfolio_projects for all to authenticated
+  using (public.is_site_admin()) with check (public.is_site_admin());
+
+drop policy if exists "public reads images of visible projects" on public.portfolio_project_images;
+create policy "public reads images of visible projects"
+  on public.portfolio_project_images for select to anon, authenticated
+  using (
+    exists (
+      select 1 from public.portfolio_projects p
+      where p.id = project_id and (p.is_visible = true or public.is_site_admin())
+    )
+  );
+
+drop policy if exists "admins manage project images" on public.portfolio_project_images;
+create policy "admins manage project images"
+  on public.portfolio_project_images for all to authenticated
+  using (public.is_site_admin()) with check (public.is_site_admin());
+
+grant select on public.portfolio_images, public.portfolio_projects, public.portfolio_project_images to anon, authenticated;
+grant insert, update, delete on public.portfolio_images, public.portfolio_projects, public.portfolio_project_images to authenticated;
+
+-- El bucket ramss-portfolio ya se crea en schema.sql.
+-- No se cambia su visibilidad ni se exponen claves privadas.
