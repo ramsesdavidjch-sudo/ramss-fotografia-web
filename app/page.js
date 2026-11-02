@@ -15,14 +15,14 @@ export default function Home() {
   const [services, setServices] = useState(fallbackServices);
   const [packages, setPackages] = useState([]);
   const [gallery, setGallery] = useState([]);
-  const [editorialProjects, setEditorialProjects] = useState([]);
+  const [editorialProjects, setEditorialProjects] = useState([]);\n  const [site, setSite] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", service: "", details: "" });
   const [sent, setSent] = useState(false);
 
   useEffect(() => {
     if (!supabase) return;
     (async () => {
-      const [s, p, photos, projects] = await Promise.all([
+      const [s, p, photos, projects, settings] = await Promise.all([
         supabase.from("services").select("*").eq("is_active", true).order("sort_order"),
         supabase.from("packages").select("*").eq("is_active", true).order("sort_order"),
         supabase.from("portfolio_images").select("*").eq("is_visible", true).order("sort_order"),
@@ -35,7 +35,7 @@ export default function Home() {
         const legacy = await supabase.from("gallery").select("*").eq("is_visible", true).order("sort_order");
         if (legacy.data) setGallery(legacy.data);
       }
-      if (projects.data) setEditorialProjects(projects.data);
+      if (projects.data) setEditorialProjects(projects.data);\n      if (settings.data) setSite(settings.data);
     })();
   }, []);
 
@@ -59,12 +59,12 @@ export default function Home() {
       </nav>
 
       <section className="hero">
-        <div className="hero-image" />
+        <div className="hero-image" style={site?.hero_image_url ? { backgroundImage: `url("${site.hero_image_url}")` } : undefined} />
         <div className="hero-shade" />
         <div className="hero-content wrap">
-          <p className="eyebrow">FOTOGRAFÍA · DIRECCIÓN CREATIVA · CONTENIDO</p>
-          <h1>Imágenes que<br/><em>permanecen.</em></h1>
-          <p className="hero-copy">Una mirada visual cuidada para contar historias, preservar momentos y construir identidades.</p>
+          <p className="eyebrow">{site?.tagline || "FOTOGRAFÍA · DIRECCIÓN CREATIVA · CONTENIDO"}</p>
+          <h1>{site?.hero_title || <>Imágenes que<br/><em>permanecen.</em></>}</h1>
+          <p className="hero-copy">{site?.hero_description || "Una mirada visual cuidada para contar historias, preservar momentos y construir identidades."}</p>
           <div className="hero-actions"><a className="button button-light" href="#portfolio">Explorar portafolio <span>↗</span></a><a className="text-link" href="#contact">Solicitar una sesión</a></div>
         </div>
         <div className="hero-index">01 — 05 <span>RAMSS FOTOGRAFÍA</span></div>
@@ -72,7 +72,7 @@ export default function Home() {
 
       <section className="intro wrap section-pad">
         <p className="eyebrow">EL ENFOQUE</p>
-        <div><h2>La fotografía como<br/><em>lenguaje propio.</em></h2><p className="intro-text">Cada proyecto merece una intención, una estética y una historia. Trabajo desde una perspectiva visual que combina sensibilidad, composición y atención al detalle.</p></div>
+        <div><h2>{site?.intro_title || <>La fotografía como<br/><em>lenguaje propio.</em></>}</h2><p className="intro-text">{site?.intro_description || "Cada proyecto merece una intención, una estética y una historia. Trabajo desde una perspectiva visual que combina sensibilidad, composición y atención al detalle."}</p></div>
       </section>
 
       <section id="portfolio" className="portfolio section-pad">
@@ -97,12 +97,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="about wrap section-pad"><div className="about-mark">R<span>/</span>S</div><div><p className="eyebrow">DETRÁS DE LA CÁMARA</p><h2>Hola, soy<br/><em>Ramses.</em></h2><p>Fotógrafo enfocado en crear imágenes con identidad, intención y cuidado por los detalles. Este espacio reúne mi trabajo y las distintas formas en las que puedo ayudarte a contar tu historia.</p><a className="text-link" href="https://www.instagram.com/ramssfotografia/" target="_blank" rel="noreferrer">Conoce mi trabajo en Instagram ↗</a></div></section>
+      <section className="about wrap section-pad">{site?.about_image_url ? <img className="about-photo" src={site.about_image_url} alt="Retrato de Ramses"/> : <div className="about-mark">R<span>/</span>S</div>}<div><p className="eyebrow">DETRÁS DE LA CÁMARA</p><h2>{site?.about_title || <>Hola, soy<br/><em>Ramses.</em></>}</h2><p>{site?.about_description || "Fotógrafo enfocado en crear imágenes con identidad, intención y cuidado por los detalles. Este espacio reúne mi trabajo y las distintas formas en las que puedo ayudarte a contar tu historia."}</p><a className="text-link" href={site?.instagram_url || "https://www.instagram.com/ramssfotografia/"} target="_blank" rel="noreferrer">Conoce mi trabajo en Instagram ↗</a></div></section>
 
-      <section id="contact" className="contact section-pad"><div className="wrap contact-grid"><div><p className="eyebrow">EMPECEMOS ALGO</p><h2>Hablemos de<br/><em>tu proyecto.</em></h2><p className="contact-copy">Cuéntame qué necesitas. Te responderé para conversar sobre disponibilidad, ideas y presupuesto.</p><div className="contact-links"><a href="https://www.instagram.com/ramssfotografia/" target="_blank" rel="noreferrer">Instagram ↗</a><a href="https://wa.me/" target="_blank" rel="noreferrer">WhatsApp ↗ <small>(configurar número)</small></a></div></div>
+      <section id="contact" className="contact section-pad"><div className="wrap contact-grid"><div><p className="eyebrow">EMPECEMOS ALGO</p><h2>{site?.contact_title || <>Hablemos de<br/><em>tu proyecto.</em></>}</h2><p className="contact-copy">{site?.contact_description || "Cuéntame qué necesitas. Te responderé para conversar sobre disponibilidad, ideas y presupuesto."}</p><div className="contact-links">{site?.contact_email && <a href={`mailto:${site.contact_email}`}>{site.contact_email} ↗</a>}{site?.contact_phone && <a href={`tel:${site.contact_phone}`}>{site.contact_phone}</a>}<a href={site?.instagram_url || "https://www.instagram.com/ramssfotografia/"} target="_blank" rel="noreferrer">Instagram ↗</a>{site?.whatsapp_number && <a href={`https://wa.me/${site.whatsapp_number.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">WhatsApp ↗</a>}{site?.location_text && <span>{site.location_text}</span>}{site?.business_hours && <span>{site.business_hours}</span>}</div></div>
         <form className="contact-form" onSubmit={submitInquiry}><label>Nombre<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Tu nombre"/></label><label>Correo electrónico<input required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="correo@ejemplo.com"/></label><label>Servicio de interés<select value={form.service} onChange={e=>setForm({...form,service:e.target.value})}><option value="">Selecciona un servicio</option>{services.map(s=><option key={s.id}>{s.name}</option>)}<option>Proyecto personalizado</option></select></label><label>Cuéntame sobre tu proyecto<textarea required rows="4" value={form.details} onChange={e=>setForm({...form,details:e.target.value})} placeholder="Fecha, tipo de sesión, idea o necesidades..."/></label><button className="button button-light" type="submit">Enviar solicitud ↗</button>{sent && <p className="success">Tu solicitud fue enviada. Gracias por contactar.</p>}</form>
       </div></section>
-      <footer className="footer wrap"><a className="wordmark" href="#">RAMSS<span>®</span><small>FOTOGRAFÍA</small></a><p>© {new Date().getFullYear()} RamsS Fotografía. Todos los derechos reservados.</p><a href="#top">Volver arriba ↑</a></footer>
+      <footer className="footer wrap"><a className="wordmark" href="#">{site?.brand_name || "RAMSS"}<span>®</span><small>FOTOGRAFÍA</small></a><p>{site?.footer_text || `© ${new Date().getFullYear()} RamsS Fotografía. Todos los derechos reservados.`}</p><a href="#top">Volver arriba ↑</a></footer>
     </main>
   );
 }
