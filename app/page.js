@@ -55,7 +55,7 @@ export default function Home() {
 
   return (
     <main>
-      <nav className="nav wrap">
+      {site?.announcement_enabled && site?.announcement_text && <div className="site-announcement">{site.announcement_text}</div>}\n      <nav className="nav wrap">
         <a className="wordmark" href="#">RAMSS<span>®</span><small>FOTOGRAFÍA</small></a>
         <div className="navlinks"><a href="#portfolio">Portafolio</a><a href="#services">Servicios</a><a href="#packages">Paquetes</a><a href="#contact">Contacto</a></div>
         <a className="nav-cta" href="#contact">Hablemos <span>↗</span></a>
@@ -78,7 +78,7 @@ export default function Home() {
         <div><h2>{site?.intro_title || <>La fotografía como<br/><em>lenguaje propio.</em></>}</h2><p className="intro-text">{site?.intro_description || "Cada proyecto merece una intención, una estética y una historia. Trabajo desde una perspectiva visual que combina sensibilidad, composición y atención al detalle."}</p></div>
       </section>
 
-      <section id="portfolio" className="portfolio section-pad">
+      {site?.show_portfolio !== false && <section id="portfolio" className="portfolio section-pad">
         <div className="wrap section-heading"><div><p className="eyebrow">SELECCIÓN DE TRABAJOS</p><h2>Portafolio<span className="gold">.</span></h2></div><p>Una selección de historias<br/>contadas a través de imágenes.</p></div>
         {(gallery.length || editorialProjects.length) ? <div className="wrap portfolio-content">
           {editorialProjects.length > 0 && <><p className="eyebrow portfolio-kicker">PROYECTOS EDITORIALES</p><div className="editorial-grid">{editorialProjects.map((project) => <article className="editorial-card" key={project.id}><a href={`#proyecto-${project.slug}`}><img src={project.cover_image_url} alt={project.title}/><div><span>{project.category}</span><h3>{project.title}</h3><p>{project.description}</p></div></a></article>)}</div>
@@ -87,12 +87,12 @@ export default function Home() {
         </div> : <div className="portfolio-empty wrap"><div className="empty-frame"><span>R / S</span><small>TU PRÓXIMA HISTORIA VISUAL</small></div><p>El portafolio se actualizará con tus fotografías y proyectos editoriales desde el panel de administración.</p></div>}
       </section>
 
-      <section id="services" className="wrap section-pad">
+      {site?.show_services !== false && <section id="services" className="wrap section-pad">
         <div className="section-heading"><div><p className="eyebrow">QUÉ PUEDO OFRECER</p><h2>Servicios<span className="gold">.</span></h2></div><p>Soluciones visuales pensadas<br/>para cada necesidad.</p></div>
         <div className="service-grid">{services.map((s, i) => <article className="service-card" key={s.id}><span className="service-no">0{i + 1}</span><h3>{s.name}</h3><p>{s.description}</p><div className="service-bottom"><span>Desde: {s.price_from || "Consultar"}</span><a href="#contact">Consultar ↗</a></div></article>)}</div>
       </section>
 
-      <section id="packages" className="packages section-pad">
+      {site?.show_packages !== false && <section id="packages" className="packages section-pad">
         <div className="wrap">
           <div className="section-heading"><div><p className="eyebrow">PROPUESTAS</p><h2>Paquetes & experiencias<span className="gold">.</span></h2></div><p>Opciones claras, con la flexibilidad<br/>de crear algo a tu medida.</p></div>
           {packages.length ? <div className="package-grid">{packages.map((p) => <article className="package-card" key={p.id}><p className="eyebrow">{p.category || "PAQUETE"}</p><h3>{p.name}</h3><p>{p.description}</p><strong>{p.price ? `$${p.price} USD` : "Cotización personalizada"}</strong>{p.features?.length > 0 && <ul>{p.features.map((f, i) => <li key={i}>{f}</li>)}</ul>}<a className="button button-outline" href={`#contact`}>Consultar paquete ↗</a></article>)}</div> :
@@ -100,7 +100,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="about wrap section-pad">{site?.about_image_url ? <img className="about-photo" src={site.about_image_url} alt="Retrato de Ramses"/> : <div className="about-mark">R<span>/</span>S</div>}<div><p className="eyebrow">DETRÁS DE LA CÁMARA</p><h2>{site?.about_title || <>Hola, soy<br/><em>Ramses.</em></>}</h2><p>{site?.about_description || "Fotógrafo enfocado en crear imágenes con identidad, intención y cuidado por los detalles. Este espacio reúne mi trabajo y las distintas formas en las que puedo ayudarte a contar tu historia."}</p><a className="text-link" href={site?.instagram_url || "https://www.instagram.com/ramssfotografia/"} target="_blank" rel="noreferrer">Conoce mi trabajo en Instagram ↗</a></div></section>
+      {site?.show_about !== false && <section className="about wrap section-pad">{site?.about_image_url ? <img className="about-photo" src={site.about_image_url} alt="Retrato de Ramses"/> : <div className="about-mark">R<span>/</span>S</div>}<div><p className="eyebrow">DETRÁS DE LA CÁMARA</p><h2>{site?.about_title || <>Hola, soy<br/><em>Ramses.</em></>}</h2><p>{site?.about_description || "Fotógrafo enfocado en crear imágenes con identidad, intención y cuidado por los detalles. Este espacio reúne mi trabajo y las distintas formas en las que puedo ayudarte a contar tu historia."}</p><a className="text-link" href={site?.instagram_url || "https://www.instagram.com/ramssfotografia/"} target="_blank" rel="noreferrer">Conoce mi trabajo en Instagram ↗</a></div></section>
 
       <section id="contact" className="contact section-pad"><div className="wrap contact-grid"><div><p className="eyebrow">EMPECEMOS ALGO</p><h2>{site?.contact_title || <>Hablemos de<br/><em>tu proyecto.</em></>}</h2><p className="contact-copy">{site?.contact_description || "Cuéntame qué necesitas. Te responderé para conversar sobre disponibilidad, ideas y presupuesto."}</p><div className="contact-links">
           {site?.contact_email && <a href={`mailto:${site.contact_email}`}>{site.contact_email} ↗</a>}
