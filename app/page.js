@@ -85,12 +85,12 @@ export default function Home() {
           {editorialProjects.map((project) => <section className="editorial-detail" id={`proyecto-${project.slug}`} key={project.id}><div className="editorial-detail-heading"><div><p className="eyebrow">{project.category}</p><h3>{project.title}</h3></div><p>{project.description}</p></div><div className="editorial-images">{(project.portfolio_project_images || []).sort((a,b)=>a.sort_order-b.sort_order).map((image)=><img key={image.id} src={image.image_url} alt={image.alt_text || project.title}/>)}</div></section>)}</>}
           {gallery.length > 0 && <><p className="eyebrow portfolio-kicker">FOTOGRAFÍAS INDIVIDUALES</p><div className="gallery-grid">{gallery.map((item) => <figure className="gallery-item" key={item.id}><img src={item.image_url} alt={item.alt_text || item.title || "Fotografía de portafolio"}/><figcaption>{item.title || item.category}</figcaption></figure>)}</div></>}
         </div> : <div className="portfolio-empty wrap"><div className="empty-frame"><span>R / S</span><small>TU PRÓXIMA HISTORIA VISUAL</small></div><p>El portafolio se actualizará con tus fotografías y proyectos editoriales desde el panel de administración.</p></div>}
-      </section>
+      </section>}
 
       {site?.show_services !== false && <section id="services" className="wrap section-pad">
         <div className="section-heading"><div><p className="eyebrow">QUÉ PUEDO OFRECER</p><h2>Servicios<span className="gold">.</span></h2></div><p>Soluciones visuales pensadas<br/>para cada necesidad.</p></div>
         <div className="service-grid">{services.map((s, i) => <article className="service-card" key={s.id}><span className="service-no">0{i + 1}</span><h3>{s.name}</h3><p>{s.description}</p><div className="service-bottom"><span>Desde: {s.price_from || "Consultar"}</span><a href="#contact">Consultar ↗</a></div></article>)}</div>
-      </section>
+      </section>}
 
       {site?.show_packages !== false && <section id="packages" className="packages section-pad">
         <div className="wrap">
@@ -98,11 +98,11 @@ export default function Home() {
           {packages.length ? <div className="package-grid">{packages.map((p) => <article className="package-card" key={p.id}><p className="eyebrow">{p.category || "PAQUETE"}</p><h3>{p.name}</h3><p>{p.description}</p><strong>{p.price ? `$${p.price} USD` : "Cotización personalizada"}</strong>{p.features?.length > 0 && <ul>{p.features.map((f, i) => <li key={i}>{f}</li>)}</ul>}<a className="button button-outline" href={`#contact`}>Consultar paquete ↗</a></article>)}</div> :
             <div className="custom-callout"><div><p className="eyebrow">HECHO A TU MEDIDA</p><h3>Tu idea merece<br/><em>una propuesta propia.</em></h3></div><p>Cuéntame qué tienes en mente y prepararé una propuesta según las características de tu proyecto.</p><a className="button button-light" href="#contact">Solicitar cotización ↗</a></div>}
         </div>
-      </section>
+      </section>}
 
-      {site?.show_about !== false && <section className="about wrap section-pad">{site?.about_image_url ? <img className="about-photo" src={site.about_image_url} alt="Retrato de Ramses"/> : <div className="about-mark">R<span>/</span>S</div>}<div><p className="eyebrow">DETRÁS DE LA CÁMARA</p><h2>{site?.about_title || <>Hola, soy<br/><em>Ramses.</em></>}</h2><p>{site?.about_description || "Fotógrafo enfocado en crear imágenes con identidad, intención y cuidado por los detalles. Este espacio reúne mi trabajo y las distintas formas en las que puedo ayudarte a contar tu historia."}</p><a className="text-link" href={site?.instagram_url || "https://www.instagram.com/ramssfotografia/"} target="_blank" rel="noreferrer">Conoce mi trabajo en Instagram ↗</a></div></section>
+      {site?.show_about !== false && <section className="about wrap section-pad">{site?.about_image_url ? <img className="about-photo" src={site.about_image_url} alt="Retrato de Ramses"/> : <div className="about-mark">R<span>/</span>S</div>}<div><p className="eyebrow">DETRÁS DE LA CÁMARA</p><h2>{site?.about_title || <>Hola, soy<br/><em>Ramses.</em></>}</h2><p>{site?.about_description || "Fotógrafo enfocado en crear imágenes con identidad, intención y cuidado por los detalles. Este espacio reúne mi trabajo y las distintas formas en las que puedo ayudarte a contar tu historia."}</p><a className="text-link" href={site?.instagram_url || "https://www.instagram.com/ramssfotografia/"} target="_blank" rel="noreferrer">Conoce mi trabajo en Instagram ↗</a></div></section>}
 
-      <section id="contact" className="contact section-pad"><div className="wrap contact-grid"><div><p className="eyebrow">EMPECEMOS ALGO</p><h2>{site?.contact_title || <>Hablemos de<br/><em>tu proyecto.</em></>}</h2><p className="contact-copy">{site?.contact_description || "Cuéntame qué necesitas. Te responderé para conversar sobre disponibilidad, ideas y presupuesto."}</p><div className="contact-links">
+      {site?.show_contact !== false && <section id="contact" className="contact section-pad"><div className="wrap contact-grid"><div><p className="eyebrow">EMPECEMOS ALGO</p><h2>{site?.contact_title || <>Hablemos de<br/><em>tu proyecto.</em></>}</h2><p className="contact-copy">{site?.contact_description || "Cuéntame qué necesitas. Te responderé para conversar sobre disponibilidad, ideas y presupuesto."}</p><div className="contact-links">
           {site?.contact_email && <a href={`mailto:${site.contact_email}`}>{site.contact_email} ↗</a>}
           {site?.contact_phone && <a href={`tel:${site.contact_phone}`}>{site.contact_phone}</a>}
           {site?.instagram_url && <a href={site.instagram_url} target="_blank" rel="noreferrer">Instagram ↗</a>}
@@ -117,7 +117,7 @@ export default function Home() {
           {site?.business_hours && <span>{site.business_hours}</span>}
         </div></div>
         {site?.contact_form_enabled !== false && <form className="contact-form" onSubmit={submitInquiry}><label>Nombre<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Tu nombre"/></label><label>Correo electrónico<input required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="correo@ejemplo.com"/></label><label>Servicio de interés<select value={form.service} onChange={e=>setForm({...form,service:e.target.value})}><option value="">Selecciona un servicio</option>{services.map(s=><option key={s.id}>{s.name}</option>)}<option>Proyecto personalizado</option></select></label><label>Cuéntame sobre tu proyecto<textarea required rows="4" value={form.details} onChange={e=>setForm({...form,details:e.target.value})} placeholder="Fecha, tipo de sesión, idea o necesidades..."/></label><button className="button button-light" type="submit">Enviar solicitud ↗</button>{sent && <p className="success">Tu solicitud fue enviada. Gracias por contactar.</p>}</form>}
-      </div></section>
+      </div></section>}
       <footer className="footer wrap"><a className="wordmark" href="#">{site?.brand_name || "RAMSS"}<span>®</span><small>FOTOGRAFÍA</small></a><p>{site?.footer_text || `© ${new Date().getFullYear()} RamsS Fotografía. Todos los derechos reservados.`}</p><a href="#top">Volver arriba ↑</a></footer>
     </main>
   );
