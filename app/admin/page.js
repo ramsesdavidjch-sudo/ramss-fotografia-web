@@ -6,7 +6,7 @@ import { supabase } from "../../lib/supabase";
 const emptyForm = { id: null, name: "", description: "", price_from: "", price: "", category: "", features: "" };
 const emptyPhoto = { id: null, title: "", category: "Retratos", alt_text: "", image_url: "", sort_order: 0, is_visible: true };
 const emptyProject = { id: null, title: "", slug: "", description: "", category: "Editorial", cover_image_url: "", sort_order: 0, is_visible: true };
-const defaultSettings = { brand_name: "RamsS Fotografía", tagline: "", hero_title: "", hero_description: "", intro_title: "", intro_description: "", about_title: "", about_description: "", contact_title: "", contact_description: "", contact_email: "", contact_phone: "", whatsapp_number: "", instagram_url: "https://www.instagram.com/ramssfotografia/", location_text: "", business_hours: "", seo_title: "", seo_description: "", hero_image_url: "", about_image_url: "", footer_text: "" };
+const defaultSettings = { brand_name: "RamsS Fotografía", tagline: "", hero_title: "", hero_description: "", intro_title: "", intro_description: "", about_title: "", about_description: "", contact_title: "", contact_description: "", contact_email: "", contact_phone: "", whatsapp_number: "", instagram_url: "https://www.instagram.com/ramssfotografia/", facebook_url: "", tiktok_url: "", pinterest_url: "", location_text: "", contact_address: "", service_area: "", google_maps_url: "", business_hours: "", contact_form_enabled: true, show_portfolio: true, show_services: true, show_packages: true, show_about: true, announcement_enabled: false, announcement_text: "", seo_title: "", seo_description: "", hero_image_url: "", about_image_url: "", footer_text: "" };
 
 export default function Admin() {
   const [session, setSession] = useState(null);
@@ -136,7 +136,7 @@ export default function Admin() {
     finally { setBusy(false); }
   }
 
-  async function saveSettings(e) {
+  async function updateInquiry(id, changes) {\n    const { error } = await supabase.from("inquiries").update({ ...changes, updated_at: new Date().toISOString() }).eq("id", id);\n    if (error) setMessage(error.message); else { setMessage("Solicitud actualizada."); await loadRows(); }\n  }\n\n  async function saveSettings(e) {
     e.preventDefault(); setBusy(true); setMessage("");
     try {
       const payload = { ...settings, id: 1, updated_at: new Date().toISOString() };
@@ -231,9 +231,24 @@ export default function Admin() {
         <label>Correo público<input type="email" value={settings.contact_email} onChange={e=>setSettings({...settings,contact_email:e.target.value})}/></label>
         <label>Teléfono público<input value={settings.contact_phone} onChange={e=>setSettings({...settings,contact_phone:e.target.value})}/></label>
         <label>Número de WhatsApp con código de país<input value={settings.whatsapp_number} onChange={e=>setSettings({...settings,whatsapp_number:e.target.value})} placeholder="58412XXXXXXX"/></label>
-        <label>Enlace de Instagram<input type="url" value={settings.instagram_url} onChange={e=>setSettings({...settings,instagram_url:e.target.value})}/></label>
-        <label>Ubicación / zona de servicio<input value={settings.location_text} onChange={e=>setSettings({...settings,location_text:e.target.value})}/></label>
+        <label>Correo público<input type="email" value={settings.contact_email} onChange={e=>setSettings({...settings,contact_email:e.target.value})}/></label>
+        <label>Teléfono público<input value={settings.contact_phone} onChange={e=>setSettings({...settings,contact_phone:e.target.value})}/></label>
+        <label>WhatsApp con código de país<input value={settings.whatsapp_number} onChange={e=>setSettings({...settings,whatsapp_number:e.target.value})} placeholder="58412XXXXXXX"/></label>
+        <label>Dirección o referencia pública<input value={settings.contact_address} onChange={e=>setSettings({...settings,contact_address:e.target.value})}/></label>
+        <label>Ciudad / ubicación visible<input value={settings.location_text} onChange={e=>setSettings({...settings,location_text:e.target.value})}/></label>
+        <label>Zona donde prestas servicios<input value={settings.service_area} onChange={e=>setSettings({...settings,service_area:e.target.value})}/></label>
+        <label>Enlace de Google Maps<input type="url" value={settings.google_maps_url} onChange={e=>setSettings({...settings,google_maps_url:e.target.value})}/></label>
         <label>Horario de atención<input value={settings.business_hours} onChange={e=>setSettings({...settings,business_hours:e.target.value})}/></label>
+        <h2>Redes sociales</h2>
+        <label>Instagram<input type="url" value={settings.instagram_url} onChange={e=>setSettings({...settings,instagram_url:e.target.value})}/></label>
+        <label>Facebook<input type="url" value={settings.facebook_url} onChange={e=>setSettings({...settings,facebook_url:e.target.value})}/></label>
+        <label>TikTok<input type="url" value={settings.tiktok_url} onChange={e=>setSettings({...settings,tiktok_url:e.target.value})}/></label>
+        <label>Pinterest<input type="url" value={settings.pinterest_url} onChange={e=>setSettings({...settings,pinterest_url:e.target.value})}/></label>
+        <h2>Secciones visibles</h2>
+        {["show_portfolio","show_services","show_packages","show_about","contact_form_enabled"].map((field)=> <label className="admin-check" key={field}><input type="checkbox" checked={!!settings[field]} onChange={e=>setSettings({...settings,[field]:e.target.checked})}/>{{show_portfolio:"Mostrar portafolio",show_services:"Mostrar servicios",show_packages:"Mostrar paquetes",show_about:"Mostrar presentación",contact_form_enabled:"Activar formulario de contacto"}[field]}</label>)}
+        <h2>Aviso destacado</h2>
+        <label className="admin-check"><input type="checkbox" checked={settings.announcement_enabled} onChange={e=>setSettings({...settings,announcement_enabled:e.target.checked})}/>Mostrar aviso</label>
+        <label>Texto del aviso<input value={settings.announcement_text} onChange={e=>setSettings({...settings,announcement_text:e.target.value})}/></label>
         <h2>Pie de página</h2>
         <label>Texto del pie de página<input value={settings.footer_text} onChange={e=>setSettings({...settings,footer_text:e.target.value})}/></label>
         <h2>SEO y buscadores</h2>
@@ -241,7 +256,7 @@ export default function Admin() {
         <label>Descripción SEO<textarea rows="3" value={settings.seo_description} onChange={e=>setSettings({...settings,seo_description:e.target.value})}/></label>
         <button className="button button-dark" disabled={busy}>{busy ? "Guardando..." : "Guardar toda la configuración"}</button>
       </form>}
-      {tab === "inquiries" && <div className="admin-list">{rows.map(r => <article key={r.id}><div className="admin-row-copy"><strong>{r.name}</strong><p>{r.email} · {r.service || "Sin servicio especificado"}</p><p>{r.details}</p><small>{new Date(r.created_at).toLocaleString("es-VE")}</small></div><button onClick={() => remove("inquiries", r.id)}>Eliminar</button></article>)}{!rows.length && <p>No hay solicitudes todavía.</p>}</div>}
+      {tab === "inquiries" && <div className="admin-list">{rows.map(r => <article className="inquiry-card" key={r.id}><div className="admin-row-copy"><strong>{r.name}</strong><p><a href={`mailto:${r.email}`}>{r.email}</a> · {r.service || "Sin servicio especificado"}</p><p>{r.details}</p><small>{new Date(r.created_at).toLocaleString("es-VE")}</small><label>Estado<select value={r.status || "new"} onChange={e=>updateInquiry(r.id,{status:e.target.value})}><option value="new">Nueva</option><option value="contacted">Contactado</option><option value="quoted">Cotización enviada</option><option value="closed">Cerrada</option></select></label><label>Notas internas<textarea rows="2" defaultValue={r.admin_notes || ""} onBlur={e=>{if(e.target.value !== (r.admin_notes || "")) updateInquiry(r.id,{admin_notes:e.target.value});}} placeholder="Notas privadas para seguimiento"/></label></div><button onClick={() => remove("inquiries", r.id)}>Eliminar</button></article>)}{!rows.length && <p>No hay solicitudes todavía.</p>}</div>}
     </section>
   </div>;
 }
