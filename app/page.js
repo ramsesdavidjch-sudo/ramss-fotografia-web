@@ -15,7 +15,8 @@ export default function Home() {
   const [services, setServices] = useState(fallbackServices);
   const [packages, setPackages] = useState([]);
   const [gallery, setGallery] = useState([]);
-  const [editorialProjects, setEditorialProjects] = useState([]);\n  const [site, setSite] = useState(null);
+  const [editorialProjects, setEditorialProjects] = useState([]);
+  const [site, setSite] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", service: "", details: "" });
   const [sent, setSent] = useState(false);
 
@@ -35,7 +36,8 @@ export default function Home() {
         const legacy = await supabase.from("gallery").select("*").eq("is_visible", true).order("sort_order");
         if (legacy.data) setGallery(legacy.data);
       }
-      if (projects.data) setEditorialProjects(projects.data);\n      if (settings.data) setSite(settings.data);
+      if (projects.data) setEditorialProjects(projects.data);
+      if (settings.data) setSite(settings.data);
     })();
   }, []);
 
