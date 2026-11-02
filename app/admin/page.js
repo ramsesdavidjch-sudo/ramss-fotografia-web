@@ -230,9 +230,6 @@ export default function Admin() {
         <label>Texto de contacto<textarea rows="3" value={settings.contact_description} onChange={e=>setSettings({...settings,contact_description:e.target.value})}/></label>
         <label>Correo público<input type="email" value={settings.contact_email} onChange={e=>setSettings({...settings,contact_email:e.target.value})}/></label>
         <label>Teléfono público<input value={settings.contact_phone} onChange={e=>setSettings({...settings,contact_phone:e.target.value})}/></label>
-        <label>Número de WhatsApp con código de país<input value={settings.whatsapp_number} onChange={e=>setSettings({...settings,whatsapp_number:e.target.value})} placeholder="58412XXXXXXX"/></label>
-        <label>Correo público<input type="email" value={settings.contact_email} onChange={e=>setSettings({...settings,contact_email:e.target.value})}/></label>
-        <label>Teléfono público<input value={settings.contact_phone} onChange={e=>setSettings({...settings,contact_phone:e.target.value})}/></label>
         <label>WhatsApp con código de país<input value={settings.whatsapp_number} onChange={e=>setSettings({...settings,whatsapp_number:e.target.value})} placeholder="58412XXXXXXX"/></label>
         <label>Dirección o referencia pública<input value={settings.contact_address} onChange={e=>setSettings({...settings,contact_address:e.target.value})}/></label>
         <label>Ciudad / ubicación visible<input value={settings.location_text} onChange={e=>setSettings({...settings,location_text:e.target.value})}/></label>
