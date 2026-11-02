@@ -25,7 +25,8 @@ export default function Admin() {
   const [coverFile, setCoverFile] = useState(null);
   const [projectFiles, setProjectFiles] = useState([]);
   const [selectedProject, setSelectedProject] = useState("");
-  const [settings, setSettings] = useState(defaultSettings);\n  const [metrics, setMetrics] = useState({ photos: 0, projects: 0, services: 0, packages: 0, inquiries: 0, newInquiries: 0 });
+  const [settings, setSettings] = useState(defaultSettings);
+  const [metrics, setMetrics] = useState({ photos: 0, projects: 0, services: 0, packages: 0, inquiries: 0, newInquiries: 0 });
 
   useEffect(() => {
     if (!supabase) return;
@@ -136,7 +137,12 @@ export default function Admin() {
     finally { setBusy(false); }
   }
 
-  async function updateInquiry(id, changes) {\n    const { error } = await supabase.from("inquiries").update({ ...changes, updated_at: new Date().toISOString() }).eq("id", id);\n    if (error) setMessage(error.message); else { setMessage("Solicitud actualizada."); await loadRows(); }\n  }\n\n  async function saveSettings(e) {
+  async function updateInquiry(id, changes) {
+    const { error } = await supabase.from("inquiries").update({ ...changes, updated_at: new Date().toISOString() }).eq("id", id);
+    if (error) setMessage(error.message); else { setMessage("Solicitud actualizada."); await loadRows(); }
+  }
+
+  async function saveSettings(e) {
     e.preventDefault(); setBusy(true); setMessage("");
     try {
       const payload = { ...settings, id: 1, updated_at: new Date().toISOString() };
@@ -152,7 +158,7 @@ export default function Admin() {
     try {
       const payload = tab === "services"
         ? { name: form.name, description: form.description, price_from: form.price_from, is_active: form.is_active, sort_order: Number(form.sort_order) || 0 }
-        : { name: form.name, description: form.description, price: form.price === "" ? null : Number(form.price), category: form.category || "Paquete", features: form.features.split("\\n").map(x => x.trim()).filter(Boolean), is_active: form.is_active, sort_order: Number(form.sort_order) || 0 };
+        : { name: form.name, description: form.description, price: form.price === "" ? null : Number(form.price), category: form.category || "Paquete", features: form.features.split("\n").map(x => x.trim()).filter(Boolean), is_active: form.is_active, sort_order: Number(form.sort_order) || 0 };
       const result = form.id ? await supabase.from(tab).update(payload).eq("id", form.id) : await supabase.from(tab).insert(payload);
       if (result.error) throw result.error;
       setForm(emptyForm); setMessage("Guardado correctamente."); await loadRows();
@@ -190,7 +196,8 @@ export default function Admin() {
       <button onClick={() => supabase.auth.signOut()}>Cerrar sesión</button><a href="/">Ver sitio ↗</a>
     </aside>
     <section className="admin-main"><p className="eyebrow">PANEL DE CONTROL</p><h1>{({ dashboard: "Resumen", portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes", settings: "Sitio y contacto" })[tab]}</h1>
-      {message && <p className="admin-message">{message}</p>}\n      {tab === "dashboard" && <div className="admin-dashboard"><div className="admin-metrics">{[["Fotografías",metrics.photos],["Proyectos",metrics.projects],["Servicios",metrics.services],["Paquetes",metrics.packages],["Solicitudes",metrics.inquiries],["Nuevas solicitudes",metrics.newInquiries]].map(([label,value])=><article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div><h2>Solicitudes recientes</h2><div className="admin-list">{rows.map(r=><article key={r.id}><div className="admin-row-copy"><strong>{r.name}</strong><p>{r.email} · {r.service || "Proyecto personalizado"}</p><small>{new Date(r.created_at).toLocaleString("es-VE")} · {r.status || "new"}</small></div><button onClick={()=>setTab("inquiries")}>Gestionar</button></article>)}{!rows.length && <p>Aún no hay solicitudes.</p>}</div></div>}
+      {message && <p className="admin-message">{message}</p>}
+      {tab === "dashboard" && <div className="admin-dashboard"><div className="admin-metrics">{[["Fotografías",metrics.photos],["Proyectos",metrics.projects],["Servicios",metrics.services],["Paquetes",metrics.packages],["Solicitudes",metrics.inquiries],["Nuevas solicitudes",metrics.newInquiries]].map(([label,value])=><article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div><h2>Solicitudes recientes</h2><div className="admin-list">{rows.map(r=><article key={r.id}><div className="admin-row-copy"><strong>{r.name}</strong><p>{r.email} · {r.service || "Proyecto personalizado"}</p><small>{new Date(r.created_at).toLocaleString("es-VE")} · {r.status || "new"}</small></div><button onClick={()=>setTab("inquiries")}>Gestionar</button></article>)}{!rows.length && <p>Aún no hay solicitudes.</p>}</div></div>}
       {tab === "portfolio" && <div className="admin-tabs">
         <button className={subtab === "photos" ? "selected" : ""} onClick={() => setSubtab("photos")}>Fotografías individuales</button>
         <button className={subtab === "projects" ? "selected" : ""} onClick={() => setSubtab("projects")}>Proyectos editoriales</button>
