@@ -5,7 +5,7 @@
 - Fotografías individuales con título, categoría, texto alternativo, orden y visibilidad.
 - Proyectos editoriales con portada, descripción, categoría y galería ordenada.
 - Panel privado en `/admin` para cargar imágenes a Supabase Storage, editar y eliminar contenido.
-- Gestión de servicios y paquetes con edición.
+- Gestión de servicios y paquetes con edición, orden y publicación/despublicación.\n- Configuración centralizada del sitio: identidad, textos de inicio, biografía, imágenes principales, datos de contacto, dirección, zona de servicio, horario, Google Maps, WhatsApp y redes sociales.\n- Control para mostrar u ocultar portafolio, servicios, paquetes, presentación, contacto y formulario.\n- Aviso destacado configurable, texto del pie de página y metadatos SEO.\n- Resumen administrativo con métricas y solicitudes recientes.\n- CRM básico de solicitudes: estados (nueva, contactado, cotización enviada, cerrada) y notas internas privadas.
 - Solicitudes de clientes visibles en el panel.
 - La web pública presenta proyectos editoriales y fotografías individuales por separado.
 - Las fotografías que ya estaban en `public.gallery` se copian a `portfolio_images` al ejecutar la migración.
@@ -46,7 +46,7 @@ No subas `.env.local` al repositorio.
 
 ## Límites conocidos
 
-- Las solicitudes de clientes todavía no tienen estados (nuevo, contactado, cerrado).
+- El formulario público todavía necesita protección antispam en servidor (rate limiting, honeypot y validación).
 - No hay optimización automática ni conversión de imágenes a WebP/AVIF durante la subida.
 - La eliminación de un proyecto borra sus filas de galería por cascada; los archivos de Storage asociados pueden necesitar limpieza manual.
 - La seguridad antispam del formulario requiere una capa de servidor con rate limiting y validación adicional antes de producción.
