@@ -15,20 +15,27 @@ export default function Home() {
   const [services, setServices] = useState(fallbackServices);
   const [packages, setPackages] = useState([]);
   const [gallery, setGallery] = useState([]);
+  const [editorialProjects, setEditorialProjects] = useState([]);
   const [form, setForm] = useState({ name: "", email: "", service: "", details: "" });
   const [sent, setSent] = useState(false);
 
   useEffect(() => {
     if (!supabase) return;
     (async () => {
-      const [s, p, g] = await Promise.all([
+      const [s, p, photos, projects] = await Promise.all([
         supabase.from("services").select("*").eq("is_active", true).order("sort_order"),
         supabase.from("packages").select("*").eq("is_active", true).order("sort_order"),
-        supabase.from("gallery").select("*").eq("is_visible", true).order("sort_order")
+        supabase.from("portfolio_images").select("*").eq("is_visible", true).order("sort_order"),
+        supabase.from("portfolio_projects").select("*, portfolio_project_images(*)").eq("is_visible", true).order("sort_order")
       ]);
       if (s.data?.length) setServices(s.data);
       if (p.data) setPackages(p.data);
-      if (g.data) setGallery(g.data);
+      if (photos.data) setGallery(photos.data);
+      else if (photos.error?.code === "42P01") {
+        const legacy = await supabase.from("gallery").select("*").eq("is_visible", true).order("sort_order");
+        if (legacy.data) setGallery(legacy.data);
+      }
+      if (projects.data) setEditorialProjects(projects.data);
     })();
   }, []);
 
@@ -70,8 +77,11 @@ export default function Home() {
 
       <section id="portfolio" className="portfolio section-pad">
         <div className="wrap section-heading"><div><p className="eyebrow">SELECCIÓN DE TRABAJOS</p><h2>Portafolio<span className="gold">.</span></h2></div><p>Una selección de historias<br/>contadas a través de imágenes.</p></div>
-        {gallery.length ? <div className="gallery-grid wrap">{gallery.map((item) => <figure className="gallery-item" key={item.id}><img src={item.image_url} alt={item.title || "Fotografía de portafolio"}/><figcaption>{item.title}</figcaption></figure>)}</div> :
-          <div className="portfolio-empty wrap"><div className="empty-frame"><span>R / S</span><small>TU PRÓXIMA HISTORIA VISUAL</small></div><p>El portafolio se actualizará con tus fotografías desde el panel de administración.</p></div>}
+        {(gallery.length || editorialProjects.length) ? <div className="wrap portfolio-content">
+          {editorialProjects.length > 0 && <><p className="eyebrow portfolio-kicker">PROYECTOS EDITORIALES</p><div className="editorial-grid">{editorialProjects.map((project) => <article className="editorial-card" key={project.id}><a href={`#proyecto-${project.slug}`}><img src={project.cover_image_url} alt={project.title}/><div><span>{project.category}</span><h3>{project.title}</h3><p>{project.description}</p></div></a></article>)}</div>
+          {editorialProjects.map((project) => <section className="editorial-detail" id={`proyecto-${project.slug}`} key={project.id}><div className="editorial-detail-heading"><div><p className="eyebrow">{project.category}</p><h3>{project.title}</h3></div><p>{project.description}</p></div><div className="editorial-images">{(project.portfolio_project_images || []).sort((a,b)=>a.sort_order-b.sort_order).map((image)=><img key={image.id} src={image.image_url} alt={image.alt_text || project.title}/>)}</div></section>)}</>}
+          {gallery.length > 0 && <><p className="eyebrow portfolio-kicker">FOTOGRAFÍAS INDIVIDUALES</p><div className="gallery-grid">{gallery.map((item) => <figure className="gallery-item" key={item.id}><img src={item.image_url} alt={item.alt_text || item.title || "Fotografía de portafolio"}/><figcaption>{item.title || item.category}</figcaption></figure>)}</div></>}
+        </div> : <div className="portfolio-empty wrap"><div className="empty-frame"><span>R / S</span><small>TU PRÓXIMA HISTORIA VISUAL</small></div><p>El portafolio se actualizará con tus fotografías y proyectos editoriales desde el panel de administración.</p></div>}
       </section>
 
       <section id="services" className="wrap section-pad">
