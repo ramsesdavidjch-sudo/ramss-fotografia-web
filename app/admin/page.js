@@ -5,7 +5,7 @@ import { supabase } from "../../lib/supabase";
 
 const emptyForm = { id: null, name: "", description: "", price_from: "", price: "", category: "", features: "" };
 const emptyPhoto = { id: null, title: "", category: "Retratos", alt_text: "", image_url: "", sort_order: 0, is_visible: true };
-const emptyProject = { id: null, title: "", slug: "", description: "", category: "Editorial", cover_image_url: "", sort_order: 0, is_visible: true };\nconst defaultSettings = { brand_name: "RamsS Fotografía", tagline: "", hero_title: "", hero_description: "", intro_title: "", intro_description: "", about_title: "", about_description: "", contact_title: "", contact_description: "", contact_email: "", contact_phone: "", whatsapp_number: "", instagram_url: "https://www.instagram.com/ramssfotografia/", location_text: "", business_hours: "", seo_title: "", seo_description: "" };
+const emptyProject = { id: null, title: "", slug: "", description: "", category: "Editorial", cover_image_url: "", sort_order: 0, is_visible: true };\nconst defaultSettings = { brand_name: "RamsS Fotografía", tagline: "", hero_title: "", hero_description: "", intro_title: "", intro_description: "", about_title: "", about_description: "", contact_title: "", contact_description: "", contact_email: "", contact_phone: "", whatsapp_number: "", instagram_url: "https://www.instagram.com/ramssfotografia/", location_text: "", business_hours: "", seo_title: "", seo_description: "", hero_image_url: "", about_image_url: "", footer_text: "" };
 
 export default function Admin() {
   const [session, setSession] = useState(null);
@@ -192,11 +192,11 @@ export default function Admin() {
         <h2>Identidad y página de inicio</h2>
         <label>Nombre de marca<input value={settings.brand_name} onChange={e=>setSettings({...settings,brand_name:e.target.value})}/></label>
         <label>Frase de marca / especialidades<input value={settings.tagline} onChange={e=>setSettings({...settings,tagline:e.target.value})}/></label>
-        <label>Título principal<textarea rows="2" value={settings.hero_title} onChange={e=>setSettings({...settings,hero_title:e.target.value})}/></label>
+        <label>Imagen principal (URL de Supabase Storage)<input value={settings.hero_image_url} onChange={e=>setSettings({...settings,hero_image_url:e.target.value})} placeholder="https://..."/></label>\n        <label>Título principal<textarea rows="2" value={settings.hero_title} onChange={e=>setSettings({...settings,hero_title:e.target.value})}/></label>
         <label>Texto principal<textarea rows="3" value={settings.hero_description} onChange={e=>setSettings({...settings,hero_description:e.target.value})}/></label>
         <label>Título de introducción<input value={settings.intro_title} onChange={e=>setSettings({...settings,intro_title:e.target.value})}/></label>
         <label>Texto de introducción<textarea rows="3" value={settings.intro_description} onChange={e=>setSettings({...settings,intro_description:e.target.value})}/></label>
-        <h2>Acerca de mí</h2>
+        <h2>Acerca de mí</h2>\n        <label>Imagen de presentación (URL)<input value={settings.about_image_url} onChange={e=>setSettings({...settings,about_image_url:e.target.value})} placeholder="https://..."/></label>
         <label>Título de presentación<input value={settings.about_title} onChange={e=>setSettings({...settings,about_title:e.target.value})}/></label>
         <label>Biografía<textarea rows="5" value={settings.about_description} onChange={e=>setSettings({...settings,about_description:e.target.value})}/></label>
         <h2>Información de contacto</h2>
@@ -208,7 +208,7 @@ export default function Admin() {
         <label>Enlace de Instagram<input type="url" value={settings.instagram_url} onChange={e=>setSettings({...settings,instagram_url:e.target.value})}/></label>
         <label>Ubicación / zona de servicio<input value={settings.location_text} onChange={e=>setSettings({...settings,location_text:e.target.value})}/></label>
         <label>Horario de atención<input value={settings.business_hours} onChange={e=>setSettings({...settings,business_hours:e.target.value})}/></label>
-        <h2>SEO y buscadores</h2>
+        <h2>Pie de página</h2>\n        <label>Texto del pie de página<input value={settings.footer_text} onChange={e=>setSettings({...settings,footer_text:e.target.value})}/></label>\n        <h2>SEO y buscadores</h2>
         <label>Título SEO<input value={settings.seo_title} onChange={e=>setSettings({...settings,seo_title:e.target.value})}/></label>
         <label>Descripción SEO<textarea rows="3" value={settings.seo_description} onChange={e=>setSettings({...settings,seo_description:e.target.value})}/></label>
         <button className="button button-dark" disabled={busy}>{busy ? "Guardando..." : "Guardar toda la configuración"}</button>
