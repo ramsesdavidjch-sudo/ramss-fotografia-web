@@ -112,6 +112,17 @@ export default function Admin() {
     finally { setBusy(false); }
   }
 
+  async function moveProjectImage(index, direction) {
+    const target = index + direction;
+    if (target < 0 || target >= projectImages.length) return;
+    const current = projectImages[index];
+    const other = projectImages[target];
+    const first = await supabase.from("portfolio_project_images").update({ sort_order: other.sort_order }).eq("id", current.id);
+    const second = await supabase.from("portfolio_project_images").update({ sort_order: current.sort_order }).eq("id", other.id);
+    if (first.error || second.error) setMessage(first.error?.message || second.error?.message);
+    else await loadRows();
+  }
+
   async function saveItem(e) {
     e.preventDefault(); setBusy(true);
     try {
@@ -171,7 +182,7 @@ export default function Admin() {
       </>}
       {tab === "portfolio" && subtab === "project-images" && <>
         <button className="button button-quiet" onClick={() => setSubtab("projects")}>← Volver a proyectos</button><h2>{project.title || "Imágenes del proyecto"}</h2><form className="admin-create" onSubmit={addProjectImages}><label>Añadir imágenes (puedes seleccionar varias)<input type="file" accept="image/*" multiple onChange={e => setProjectFiles(Array.from(e.target.files || []))} /></label><p>{projectFiles.length} archivo(s) seleccionado(s)</p><button className="button button-dark" disabled={busy || !projectFiles.length}>{busy ? "Subiendo..." : "Subir imágenes"}</button></form>
-        <div className="admin-list">{projectImages.map((r, i) => <article key={r.id}><img className="admin-thumb" src={r.image_url} alt="" /><div className="admin-row-copy"><strong>Imagen {i + 1}</strong><p>Orden {r.sort_order}</p></div><button onClick={() => remove("portfolio_project_images", r.id, r.image_url)}>Eliminar</button></article>)}{!projectImages.length && <p>Este proyecto aún no tiene imágenes.</p>}</div>
+        <div className="admin-list">{projectImages.map((r, i) => <article key={r.id}><img className="admin-thumb" src={r.image_url} alt="" /><div className="admin-row-copy"><strong>Imagen {i + 1}</strong><p>Orden {r.sort_order}</p></div><div className="admin-actions"><button disabled={i === 0} onClick={() => moveProjectImage(i, -1)}>Subir</button><button disabled={i === projectImages.length - 1} onClick={() => moveProjectImage(i, 1)}>Bajar</button><button onClick={() => remove("portfolio_project_images", r.id, r.image_url)}>Eliminar</button></div></article>)}{!projectImages.length && <p>Este proyecto aún no tiene imágenes.</p>}</div>
       </>}
       {(tab === "services" || tab === "packages") && <>
         <form className="admin-create" onSubmit={saveItem}><h2>{form.id ? "Editar" : "Agregar"} {tab === "services" ? "servicio" : "paquete"}</h2><label>Nombre<input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label><label>Descripción<textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></label>{tab === "services" ? <label>Precio desde<input value={form.price_from} onChange={e => setForm({ ...form, price_from: e.target.value })} /></label> : <><label>Precio USD<input type="number" min="0" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></label><label>Categoría<input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} /></label><label>Características (una por línea)<textarea rows="4" value={form.features} onChange={e => setForm({ ...form, features: e.target.value })} /></label></>}<div className="admin-actions"><button className="button button-dark" disabled={busy}>Guardar</button><button type="button" className="button button-quiet" onClick={() => setForm(emptyForm)}>Limpiar</button></div></form>
