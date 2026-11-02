@@ -41,6 +41,21 @@ export default function Admin() {
     if (!supabase) return;
     setMessage("");
     let result;
+    if (tab === "dashboard") {
+      const [photos, projects, services, packages, inquiries, fresh] = await Promise.all([
+        supabase.from("portfolio_images").select("*", { count: "exact", head: true }),
+        supabase.from("portfolio_projects").select("*", { count: "exact", head: true }),
+        supabase.from("services").select("*", { count: "exact", head: true }),
+        supabase.from("packages").select("*", { count: "exact", head: true }),
+        supabase.from("inquiries").select("*", { count: "exact", head: true }),
+        supabase.from("inquiries").select("*").order("created_at", { ascending: false }).limit(5)
+      ]);
+      setMetrics({ photos: photos.count || 0, projects: projects.count || 0, services: services.count || 0, packages: packages.count || 0, inquiries: inquiries.count || 0, newInquiries: fresh.data?.filter(item => (item.status || "new") === "new").length || 0 });
+      setRows(fresh.data || []);
+      const failure = [photos, projects, services, packages, inquiries, fresh].find(item => item.error);
+      if (failure) setMessage(failure.error.message);
+      return;
+    }
     if (tab === "settings") {
       result = await supabase.from("site_settings").select("*").eq("id", 1).single();
       if (result.data) setSettings({ ...defaultSettings, ...result.data });
