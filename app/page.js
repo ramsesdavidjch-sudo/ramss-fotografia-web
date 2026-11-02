@@ -27,7 +27,8 @@ export default function Home() {
         supabase.from("services").select("*").eq("is_active", true).order("sort_order"),
         supabase.from("packages").select("*").eq("is_active", true).order("sort_order"),
         supabase.from("portfolio_images").select("*").eq("is_visible", true).order("sort_order"),
-        supabase.from("portfolio_projects").select("*, portfolio_project_images(*)").eq("is_visible", true).order("sort_order")
+        supabase.from("portfolio_projects").select("*, portfolio_project_images(*)").eq("is_visible", true).order("sort_order"),
+        supabase.from("site_settings").select("*").eq("id", 1).single()
       ]);
       if (s.data?.length) setServices(s.data);
       if (p.data) setPackages(p.data);
