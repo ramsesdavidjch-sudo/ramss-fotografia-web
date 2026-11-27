@@ -23,7 +23,7 @@ export async function GET(request, context) {
     return { ...item, preview_url: signed.data?.signedUrl || null };
   }));
   const videos = await Promise.all((videosResult.data || []).map(async item => {
-    const signed = await admin.storage.from("ramss-deliveries").createSignedUrl(item.preview_path, 60 * 10);
+    const signed = await admin.storage.from("ramss-deliveries").createSignedUrl(item.preview_path, 60 * 60 * 2);
     return { ...item, preview_url: signed.data?.signedUrl || null };
   }));
   const comments = videos.length
