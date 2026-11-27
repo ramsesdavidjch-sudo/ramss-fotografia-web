@@ -208,7 +208,7 @@ export default function Admin() {
   return <div className="admin-layout">
     <aside className="admin-side"><a className="wordmark" href="/">RAMSS<span>®</span><small>ADMINISTRACIÓN</small></a>
       {["dashboard", "portfolio", "services", "packages", "inquiries", "settings"].map(key => <button className={tab === key ? "active" : ""} key={key} onClick={() => { setTab(key); setForm(emptyForm); }}>{({ dashboard: "Resumen", portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes", settings: "Sitio y contacto" })[key]}</button>)}
-      <button onClick={() => supabase.auth.signOut()}>Cerrar sesión</button><a href="/">Ver sitio ↗</a>
+      <a href="/admin/entregas">Entregas privadas ↗</a><button onClick={() => supabase.auth.signOut()}>Cerrar sesión</button><a href="/">Ver sitio ↗</a>
     </aside>
     <section className="admin-main"><p className="eyebrow">PANEL DE CONTROL</p><h1>{({ dashboard: "Resumen", portfolio: "Portafolio", services: "Servicios", packages: "Paquetes", inquiries: "Solicitudes", settings: "Sitio y contacto" })[tab]}</h1>
       {message && <p className="admin-message">{message}</p>}
