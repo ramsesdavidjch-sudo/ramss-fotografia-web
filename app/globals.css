@@ -139,3 +139,5 @@
  .client-video-review{padding:60px 0}
  .client-gallery-header>span{font-size:7px}
 }
+
+.client-approval{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}.client-approval small,.client-approval span{font-size:10px;color:#777}
