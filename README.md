@@ -45,3 +45,29 @@ Incluye portada, servicios, paquetes, portafolio, presentación, formulario de s
 - Pruebas de seguridad, accesibilidad, SEO y despliegue.
 
 Los datos de demostración y las imágenes de referencia deben reemplazarse por material autorizado de RamsS Fotografía antes de publicar.
+
+
+## Portal de entregas privadas
+
+La rama de trabajo incorpora un módulo de entregas privadas en `/admin/entregas` y un portal de cliente en `/cliente/[slug]`.
+
+### Variables adicionales
+
+Configura en el entorno local y en Vercel:
+
+- `SUPABASE_SERVICE_ROLE_KEY`: clave secreta de servidor. **Nunca** debe llevar el prefijo `NEXT_PUBLIC_` ni enviarse al navegador.
+- `NEXT_PUBLIC_SITE_URL`: URL pública del sitio para generar enlaces completos de galería.
+
+La clave de servicio solo se utiliza en Route Handlers del servidor. Los clientes acceden a la galería con un token aleatorio cuyo hash se guarda en la base de datos. Las previsualizaciones se entregan con URL firmada de corta duración; los originales solo se firman cuando el pago está confirmado y la entrega se libera manualmente.
+
+### Flujo de archivos
+
+1. Crea la galería desde `/admin/entregas`.
+2. Copia y comparte el enlace privado generado. Si configuraste contraseña, envíala por un canal separado.
+3. Sube por separado el original y una previsualización con marca de agua ya incrustada. La carga utiliza URLs firmadas de Supabase Storage para no pasar archivos grandes por las funciones de Vercel.
+4. Confirma manualmente el pago y luego libera las descargas originales.
+5. Para revisión audiovisual, sube cada versión de vídeo con su previsualización protegida. Los comentarios del cliente quedan asociados a una versión y a un instante del vídeo.
+
+**Importante:** el sistema exige una previsualización con marca de agua incrustada, pero la preparación de esa copia se realiza antes de subirla; no se debe tratar como una marca de agua generada automáticamente por el servidor. La prevención absoluta de capturas de pantalla o grabación externa no es técnicamente garantizable.
+
+Antes de usarlo con clientes reales, configura las variables secretas, prueba el acceso con un enlace de prueba, revisa las políticas RLS y ejecuta las comprobaciones de seguridad y despliegue. No compartas enlaces privados en repositorios ni en registros públicos.
