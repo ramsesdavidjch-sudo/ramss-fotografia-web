@@ -57,3 +57,85 @@
 .admin-metrics span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#777}
 .admin-metrics strong{font:36px 'Playfair Display';color:#987d58}
 @media(max-width:650px){.admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Private client delivery portal */
+.delivery-admin{min-height:100vh;background:#f4f1eb;color:#171715}
+.delivery-admin-header{height:74px;padding:0 5vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #d5d0c7;font-size:10px;letter-spacing:.14em}
+.delivery-admin-header a{color:#987d58}
+.delivery-admin-main{width:min(1000px,calc(100% - 40px));margin:65px auto 100px}
+.delivery-admin-main>h1,.client-gallery-intro h1{font:400 clamp(42px,7vw,76px)/1.05 'Playfair Display';margin:12px 0}
+.delivery-admin-lead{font-size:13px;color:#777;line-height:1.8;max-width:600px}
+.delivery-admin-card{background:#e9e5dd;padding:30px;margin:30px 0}
+.delivery-admin-card h2,.delivery-list-section h2{font:400 29px 'Playfair Display';margin:0 0 22px}
+.delivery-create-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.delivery-create-form label,.delivery-upload-form label{display:flex;flex-direction:column;gap:8px;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.delivery-create-form input,.delivery-create-form textarea,.delivery-upload-form input,.delivery-upload-form select,.delivery-upload-form textarea{width:100%;background:transparent;border:0;border-bottom:1px solid #aaa398;padding:11px 0;font:13px 'DM Sans';color:#171715}
+.delivery-create-form textarea{min-height:70px}
+.delivery-create-form button{justify-self:start}
+.delivery-admin-message{padding:12px 16px;background:#e6e0d4;font-size:12px}
+.delivery-link-box{display:grid;gap:10px;padding:20px;background:#e4ded2;margin:20px 0}
+.delivery-link-box input{width:100%;padding:10px;border:1px solid #c9c2b6;background:#f8f6f1}
+.delivery-link-box button,.delivery-gallery-actions button,.delivery-comment-list button{justify-self:start;border:1px solid #b9ae9d;background:transparent;padding:9px 12px;font:10px 'DM Sans';cursor:pointer}
+.delivery-link-box small{font-size:10px;color:#777}
+.delivery-gallery-list{display:grid;gap:12px}
+.delivery-gallery-list>article{background:#e9e5dd;padding:18px;display:grid;gap:14px}
+.delivery-gallery-list>article.active{outline:1px solid #b79a70}
+.delivery-gallery-select{display:grid;gap:6px;text-align:left;background:none;border:0;cursor:pointer;color:#171715}
+.delivery-gallery-select strong{font:22px 'Playfair Display'}
+.delivery-gallery-select span,.delivery-gallery-select small{font-size:11px;color:#777}
+.delivery-gallery-actions{display:flex;gap:8px;flex-wrap:wrap}
+.delivery-gallery-actions button:disabled{opacity:.35;cursor:not-allowed}
+.delivery-upload-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:30px}
+.delivery-upload-form>p{font-size:11px;color:#777;line-height:1.7}
+.delivery-asset-list,.delivery-comment-list{display:grid;gap:9px;margin-bottom:25px}
+.delivery-asset-list span,.delivery-comment-list article{background:#f4f1eb;padding:12px;font-size:11px}
+.delivery-comment-list article p{font-size:11px;color:#777}
+.client-gallery-shell{min-height:100vh;background:#f4f1eb;color:#171715;padding:0 5vw}
+.client-gallery-header{height:78px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #d5d0c7}
+.client-gallery-header>span{font-size:9px;letter-spacing:.2em;color:#987d58}
+.client-gallery-intro{padding:85px 0 45px;max-width:760px}
+.client-gallery-intro>p:not(.eyebrow){font-size:13px;line-height:1.8;color:#777}
+.client-status{display:inline-block;margin-top:20px;padding:10px 13px;background:#e7e1d6;font-size:10px;letter-spacing:.08em}
+.client-photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.client-photo-grid article{background:#e8e3da}
+.client-photo-grid img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}
+.client-photo-grid article>div{padding:12px;display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:10px}
+.client-download{color:#987d58;text-decoration:underline}
+.client-video-review{padding:90px 0}
+.client-video-heading h2{font:400 42px 'Playfair Display';margin:10px 0}
+.client-video-heading>p:last-child{font-size:12px;color:#777}
+.client-video-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:30px;margin-top:30px}
+.client-video-player video{width:100%;max-height:600px;background:#111}
+.client-version-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.client-version-list button{padding:9px 12px;border:1px solid #c9c2b6;background:transparent;font:10px 'DM Sans'}
+.client-version-list button.selected{background:#171715;color:#fff}
+.client-review-panel{background:#e9e5dd;padding:22px}
+.client-review-panel h3{font:24px 'Playfair Display';margin:0 0 18px}
+.client-comment{border-bottom:1px solid #d0c9bd;padding:12px 0}
+.client-comment>span{font-size:9px;letter-spacing:.1em;color:#987d58}
+.client-comment p,.client-comment blockquote{font-size:12px;line-height:1.7}
+.client-muted{font-size:11px;color:#777}
+.client-review-panel form{display:grid;gap:14px;margin-top:22px}
+.client-review-panel label{display:grid;gap:7px;font-size:10px;text-transform:uppercase;letter-spacing:.1em}
+.client-review-panel input,.client-review-panel textarea,.client-password input{width:100%;border:0;border-bottom:1px solid #aaa398;background:transparent;padding:10px 0;font:13px 'DM Sans'}
+.client-review-panel textarea{resize:vertical}
+.client-gallery-footer{padding:35px 0;border-top:1px solid #d5d0c7;font-size:10px;color:#777}
+.client-password{max-width:440px;margin:15vh auto;background:#e9e5dd;padding:35px}
+.client-password h1{font:400 38px 'Playfair Display'}
+.client-password p{font-size:12px;color:#777;line-height:1.8}
+.client-password form{display:grid;gap:18px;margin-top:24px}
+.client-error{color:#9a634e}
+@media(max-width:760px){
+ .delivery-admin-header{padding:0 20px;font-size:8px}
+ .delivery-admin-main{margin:40px auto 70px}
+ .delivery-create-form,.delivery-upload-form{grid-template-columns:1fr}
+ .delivery-admin-card{padding:20px}
+ .client-gallery-shell{padding:0 19px}
+ .client-gallery-intro{padding:55px 0 30px}
+ .client-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .client-photo-grid article>div{align-items:flex-start;flex-direction:column}
+ .client-video-layout{grid-template-columns:1fr}
+ .client-video-review{padding:60px 0}
+ .client-gallery-header>span{font-size:7px}
+}
