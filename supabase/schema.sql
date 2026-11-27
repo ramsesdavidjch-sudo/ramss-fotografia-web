@@ -54,12 +54,39 @@ alter table public.packages enable row level security;
 alter table public.gallery enable row level security;
 alter table public.inquiries enable row level security;
 
+-- Keep the privileged lookup outside the exposed Data API schema.
+create schema if not exists private;
+revoke all on schema private from public;
+grant usage on schema private to anon, authenticated;
+
+create or replace function private.is_site_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $
+  select exists (
+    select 1 from public.admin_users
+    where user_id = (select auth.uid())
+  );
+$;
+revoke all on function private.is_site_admin() from public;
+grant execute on function private.is_site_admin() to anon, authenticated;
+
+-- Invoker wrapper preserves existing RLS policy references without exposing
+-- a SECURITY DEFINER function through the public Data API.
 create or replace function public.is_site_admin()
-returns boolean language sql stable security definer
-set search_path = public
-as $$
-  select exists(select 1 from public.admin_users where user_id = auth.uid());
-$$;
+returns boolean
+language sql
+stable
+security invoker
+set search_path = ''
+as $
+  select private.is_site_admin();
+$;
+revoke all on function public.is_site_admin() from public;
+grant execute on function public.is_site_admin() to anon, authenticated;
 
 create policy "public reads active services" on public.services for select using (is_active = true or public.is_site_admin());
 create policy "admins manage services" on public.services for all using (public.is_site_admin()) with check (public.is_site_admin());
@@ -87,3 +114,10 @@ using (bucket_id = 'ramss-portfolio' and public.is_site_admin());
 
 -- Tras crear tu usuario en Supabase Authentication, añade su UUID:
 -- insert into public.admin_users (user_id) values ('PEGA-AQUI-TU-UUID');
+
+
+-- Explicit Data API grants: new public tables are opt-in on current Supabase projects.
+grant select on public.services, public.packages, public.gallery to anon, authenticated;
+grant insert, update, delete on public.services, public.packages, public.gallery to authenticated;
+grant insert on public.inquiries to anon, authenticated;
+grant select, update, delete on public.inquiries to authenticated;
