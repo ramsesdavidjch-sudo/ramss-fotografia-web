@@ -105,16 +105,27 @@ export default function PrivateDeliveriesAdmin() {
     if (!selected || !original || !preview) { setMessage("Selecciona el original y su previsualización con marca de agua."); return; }
     setBusy(true); setMessage("");
     try {
-      const formData = new FormData();
-      formData.append("kind", kind); formData.append("title", title);
-      formData.append("original", original); formData.append("preview", preview);
-      formData.append("watermarked", "true");
-      const { data } = await supabase.auth.getSession();
-      const response = await fetch("/api/admin/deliveries/" + selected + "/assets", {
-        method: "POST", headers: { Authorization: "Bearer " + data.session.access_token }, body: formData
+      const prepared = await api("/api/admin/deliveries/" + selected + "/uploads", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind, original_mime: original.type, preview_mime: preview.type,
+          original_name: original.name, preview_name: preview.name
+        })
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "No se pudo cargar el archivo.");
+      const bucket = supabase.storage.from("ramss-deliveries");
+      const [previewUpload, originalUpload] = await Promise.all([
+        bucket.uploadToSignedUrl(prepared.preview.path, prepared.preview.token, preview, { contentType: preview.type }),
+        bucket.uploadToSignedUrl(prepared.original.path, prepared.original.token, original, { contentType: original.type })
+      ]);
+      if (previewUpload.error || originalUpload.error) throw new Error(previewUpload.error?.message || originalUpload.error?.message || "Falló la carga al almacenamiento.");
+      await api("/api/admin/deliveries/" + selected + "/assets", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind, title, watermarked: true,
+          preview_path: prepared.preview.path, original_path: prepared.original.path,
+          original_mime: original.type, original_size: original.size
+        })
+      });
       setTitle(""); setPhotoOriginal(null); setPhotoPreview(null); setVideoOriginal(null); setVideoPreview(null);
       setMessage("Archivo añadido correctamente."); await loadSelected(selected);
     } catch (e) { setMessage(e.message); }
